@@ -1141,9 +1141,13 @@ public class SettingsActivity extends Activity {
             return v;
         }
 
+        /** The choices for At power-on: Live TV only where the TV has live TV to open. */
+        private String[] powerOnValues() {
+            return HomeApps.liveTv(getContext()) != null ? Prefs.POWER_ON : new String[] {"tv", "home"};
+        }
+
         /** The chosen photo's place among the photos ("Automatic" when there is none, or it is gone). */
-        private String photoValue(String name) {
-            List<File> list = Photos.files(getContext());
+        private String photoValue(String name) {            List<File> list = Photos.files(getContext());
             if (list.isEmpty()) return "—";
             for (int i = 0; i < list.size(); i++) if (list.get(i).getName().equals(name)) {
                 return Ui.trf("{i} of {n}", "i", i + 1, "n", list.size());
@@ -1171,8 +1175,7 @@ public class SettingsActivity extends Activity {
                             : i == 6 ? Capabilities.NEED_ADB : null;
                 case HOME_SETTINGS:
                     return pickScroll + i == PLAYING_ROW ? Capabilities.NEED_LISTENER
-                            : pickScroll + i == HOME_ROW ? Capabilities.NEED_HOME_ASSISTANT
-                            : pickScroll + i == POWER_ON_ROW ? Capabilities.NEED_LIVE_TV : null;
+                            : pickScroll + i == HOME_ROW ? Capabilities.NEED_HOME_ASSISTANT : null;
                 case POWER: {
                     int id = powerRows()[i];
                     return id == P_WHERE ? Capabilities.NEED_OVERLAY : null;
@@ -1500,8 +1503,10 @@ public class SettingsActivity extends Activity {
                     break;
                 }
                 case POWER_ON_ROW: {   // read at the next full start (HomeMode.bootCheck, HomeActivity)
-                    int at = java.util.Arrays.asList(Prefs.POWER_ON).indexOf(Prefs.powerOn());
-                    Prefs.setPowerOn(Prefs.POWER_ON[(at + dir + Prefs.POWER_ON.length) % Prefs.POWER_ON.length]);
+                    String[] values = powerOnValues();
+                    int at = java.util.Arrays.asList(values).indexOf(Prefs.powerOn());
+                    if (at < 0) at = 0;   // the value it had isn't among the ones this TV can use
+                    Prefs.setPowerOn(values[(at + dir + values.length) % values.length]);
                     return;
                 }
                 case ANDROID_APPS_ROW: Prefs.setAndroidApps(!Prefs.androidApps()); break;
