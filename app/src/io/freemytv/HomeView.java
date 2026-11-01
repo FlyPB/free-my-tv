@@ -106,6 +106,10 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private static final int COLUMNS = 5, VISIBLE_ROWS = 3;
     private static final float GRID_W = 300, GRID_H = 169, GRID_GAP = 40, GRID_ROW = 239, GRID_TOP = 196, GRID_RADIUS = 22;
     private static final int SMOKE = 0xFF111113, INK = 0xFF1C1C1E, WHITE = 0xFFF5F5F7;
+    // The premium palette (the design in tx9/stitch): the neon focus of the dark theme, its sky blue in the light one.
+    private static final int FOCUS_NIGHT = 0xFF00F3FF, FOCUS_DAY = 0xFF38BDF8;
+    /** The space the app's name takes under the icon on the shelf (the premium design). */
+    private static final float SHELF_NAME_H = 44;
     private static final int UP_COLOR = 0xFF30D158, DOWN_COLOR = 0xFFFF453A;
     private static final long TOAST_MS = 6000, FADE_MS = 800;
     /** Blur radii of the shadow and shadowDeep paints (Shadows needs them to draw the same blur on older TVs). */
@@ -336,6 +340,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
 
     private Paint labelPaint, metaPaint, clockPaint, buttonPaint, capsuleText, tipPaint, quotePaint, staleQuote;
     private Paint rowTitle, drawerLabel, cardTitle, cardText, cardDim, cardDimRight, bigTemp, hourPaint, hourTemp, dayLow;
+    private TextPaint shelfLabel;
     private Paint pricePaint, changePaint, sheetTitle;
     private TextPaint titlePaint, gridLabel, toastPaint;
     private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -353,6 +358,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
     private final Paint veil = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint tileFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF tmp = new RectF(), cell = new RectF(), screen = new RectF();
     private final TextPaint fitPaint = new TextPaint();
     private final RectF gridCell = new RectF();
@@ -944,6 +950,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         rowTitle = Ui.text(Ui.semibold, 25 * k, 0xB3FFFFFF);
         drawerLabel = Ui.text(Ui.medium, 23 * k, 0xEBFFFFFF);
         drawerLabel.setTextAlign(Paint.Align.CENTER);
+        shelfLabel = new TextPaint(Ui.text(Ui.medium, 21 * k, L_INK));
+        shelfLabel.setTextAlign(Paint.Align.CENTER);
         cardTitle = Ui.text(Ui.semibold, 25 * k, 0xB3FFFFFF);
         cardText = Ui.text(Ui.medium, 29 * k, 0xF2FFFFFF);
         cardDim = Ui.numbers(Ui.medium, 23 * k, 0xADFFFFFF);
@@ -1630,7 +1638,7 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         float th = tw * 9f / 16;
         float width = n * tw + Math.max(0, n - 1) * gap, left = (w - width) / 2f;
         float top = (L_PLATTER_TOP + L_TILE_H) * k - th;
-        platterRect.set(left - pad, top, left + width + pad, top + th + 2 * pad);
+        platterRect.set(left - pad, top, left + width + pad, top + th + pad + SHELF_NAME_H * k);
         snap(platterRect);
         shelfFirst = Math.max(0, Math.min(shelfFirst, shelf.size() - n));
         float x = left - shelfFirst * (tw + gap), y = top + pad;
@@ -1903,6 +1911,11 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         shadowDeep.setColor(Ui.alpha(0xFF000000, tone(0.14f, 0.3f) + tone(0.18f, 0.3f) * fc + 0.14f * Ui.clamp(l)));
         shadows.draw(c, tmp, r0, DEEP_BLUR * k, shadowDeep);
         c.restore();
+        // The focused tile gets the neon edge and its halo (the premium design).
+        if (fc > 0.01f) {
+            glow.setColor(Ui.alpha(tone(FOCUS_DAY, FOCUS_NIGHT), 0.4f * fc));
+            shadows.draw(c, cell, r, 32 * k, glow);
+        }
         int[] style = TILE_STYLE.get(it.key);
         if (it.logo != null && style != null) {
             if (tileShaders.length != shelf.size() || tileShaderH != bh) {
@@ -1936,6 +1949,24 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             drawLogo(c, it, cell, s, 0);
         } else {
             if (it.tile != null) roundImage(c, it.tile, it.tileShader, cell, r);
+        }
+        // The neon edge around the focused tile (the premium design).
+        if (fc > 0.01f) {
+            tileFill.setShader(null);
+            tileFill.setStyle(Paint.Style.STROKE);
+            tileFill.setStrokeWidth(3 * k);
+            tileFill.setColor(Ui.alpha(tone(FOCUS_DAY, FOCUS_NIGHT), fc));
+            c.drawRoundRect(cell, r, r, tileFill);
+            tileFill.setStyle(Paint.Style.FILL);
+            tileFill.setStrokeWidth(0);
+        }
+        // The app's name under the icon (the premium design).
+        String name = it.label;
+        if (name != null && !name.isEmpty()) {
+            shelfLabel.setTextSize(21 * k);
+            String shown = TextUtils.ellipsize(name, shelfLabel, bw - 12 * k, TextUtils.TruncateAt.END).toString();
+            shelfLabel.setColor(tone(L_INK, 0xD9FFFFFF));
+            c.drawText(shown, cx, base.bottom + 33 * k, shelfLabel);
         }
     }
 
@@ -4802,12 +4833,19 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
             scene.liquid(c, cell, rad, tone(glassLight(), SMOKE), tone(0.55f, 0.5f), tone(0.02f, 0.01f), 12 * k, 8 * k,
                     tone(0.6f, 0.45f), 1 - f);
             if (f > 0.01f) {
+                // The focused button: the neon tint and its ring (the premium design).
                 fill.setShader(null);
-                fill.setColor(Ui.alpha(0xFFFFFFFF, f));
+                fill.setColor(Ui.alpha(tone(FOCUS_DAY, FOCUS_NIGHT), 0.2f * f));
                 c.drawCircle(cell.centerX(), cell.centerY(), rad, fill);
+                fill.setStyle(Paint.Style.STROKE);
+                fill.setStrokeWidth(2 * k);
+                fill.setColor(Ui.alpha(tone(FOCUS_DAY, FOCUS_NIGHT), f));
+                c.drawCircle(cell.centerX(), cell.centerY(), rad - 1 * k, fill);
+                fill.setStyle(Paint.Style.FILL);
+                fill.setStrokeWidth(0);
             }
             Symbols.draw(getContext(), c, it.symbol, cell.centerX(), cell.centerY(), 27 * k * s,
-                    blend(tone(L_INK, 0xEBFFFFFF), L_INK, f));
+                    blend(tone(L_INK, 0xEBFFFFFF), tone(FOCUS_DAY, FOCUS_NIGHT), f));
             if (f > 0.01f) {
                 String label = it.label;
                 float half = lTip.measureText(label) / 2;

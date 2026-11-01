@@ -87,6 +87,32 @@ adb shell "nohup logcat -v time -s FreeMyTV > /sdcard/fm.log 2>&1 &"
 adb connect 192.168.0.232:5555 && adb pull /sdcard/fm.log
 ```
 
+## O design premium (em `stitch/`)
+
+Seis telas desenhadas no Stitch (`stitch/`): a inicial e os ajustes em **premium glass** (claro) e em **dark premium neon** (escuro), e a lista de apps nos dois. A paleta que veio de lá:
+
+| | Claro (premium glass) | Escuro (dark premium neon) |
+|---|---|---|
+| Fundo | `#0f172a` (tinta) sobre o branco gelo | `#05070a` com o brilho ciano |
+| Cartão/vidro | `rgba(255,255,255,0.65)`, borda `rgba(255,255,255,0.85)` | `rgba(15,23,42,0.65)`, borda `rgba(255,255,255,0.12)` |
+| Foco | `#ffffff` com o brilho do céu (`rgba(56,189,248,0.4)`) | **`#00f3ff`** (ciano neon), halo `0 0 35px rgba(0,243,255,0.45)` |
+
+O app já separa os dois temas (`tone(dia, noite)` ✓, com *Tema* em *Ajustes do Início* ✓), então a paleta entrou nos dois lados.
+
+**Aplicado** (`HomeView.java`):
+
+- O item em foco da prateleira ganha a **borda neon** e o **halo** ✓ (`#00f3ff` à noite, o azul do céu de dia ✓).
+- O **nome do app** aparece **embaixo do ícone** ✓ (o design mostra o nome ✓ — antes só o ícone ✓).
+- O botão do topo em foco trocou o **branco chapado** por um **anel neon** com o ícone na cor do foco ✓ (era o "sem vida" ✗).
+
+**Falta** (dá para o próximo passo):
+
+- O **cartão** do design: o app dentro de um cartão translúcido, quadrado, com o nome embaixo ✗ — hoje o tile **é** o ícone do app, em 16:9 ✓ (o formato dos banners de TV ✓). Mudar isso é mexer em `HomeApps` (o desenho do tile ✓) e no layout da prateleira ✓.
+- A paleta do **vidro** dos painéis (a barra da prateleira e as pílulas da gaveta ✗) ainda é a do app ✗ — o *Scene* desenha o vidro ✓ (e no Android 7 ele é o plano ✗, sem AGSL ✓).
+- O design mostra os **atalhos sempre visíveis** embaixo da prateleira ✗ — no app eles ficam na gaveta (que abre com ↓ ✓).
+
+O backup do antes está em `backup/FreeMyTV-antes-do-design.apk` ✓, nas telas `1-…` a `7-…` ✓ e na tag `antes-do-design` ✓.
+
 ## O boot: a tela inicial não subia sozinha
 
 Ao ligar a box depois de um desligamento, a ROM dela subia **o launcher dela** (o `com.oranth.launcher`,
