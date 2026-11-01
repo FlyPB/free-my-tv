@@ -6,6 +6,7 @@ import android.net.LinkAddress;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +21,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,7 +63,7 @@ final class KeyPage {
         this.watchmode = watchmode;
         byte[] random = new byte[12];
         new SecureRandom().nextBytes(random);
-        path = "/" + Base64.getUrlEncoder().withoutPadding().encodeToString(random);
+        path = "/" + Base64.encodeToString(random, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
         server = new ServerSocket(0, 4, lan);   // port 0: a free one the system picks
         url = "http://" + lan.getHostAddress() + ":" + server.getLocalPort() + path;
         Thread t = new Thread(this::serve, "KeyPage");

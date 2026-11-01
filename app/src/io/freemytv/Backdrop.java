@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
+import android.os.Build;
 
 /**
  * The home screen background made from the recommendation's image, built once in the background:
@@ -210,10 +211,16 @@ final class Backdrop {
 
     /** Copies it to GPU memory (cheap to draw; the process doesn't keep the pixels). */
     static Bitmap gpu(Bitmap b) {
-        Bitmap g = b.copy(Bitmap.Config.HARDWARE, false);
+        if (Build.VERSION.SDK_INT < 26) return b;   // Bitmap.Config.HARDWARE is Android 8+
+        Bitmap g = b.copy(Gpu.HARDWARE, false);
         if (g == null) return b;
         b.recycle();
         return g;
+    }
+
+    /** The GPU bitmap config is Android 8+: only this class touches it, so Backdrop still verifies on Android 7. */
+    private static final class Gpu {
+        static final Bitmap.Config HARDWARE = Bitmap.Config.HARDWARE;
     }
 
     /** Blends with a near-black (the darkest gray of Apple's dark-mode backgrounds), keeping the photo's tint. */

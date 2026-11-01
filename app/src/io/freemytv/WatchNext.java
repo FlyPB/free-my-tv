@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.tv.TvContract;
 import android.net.Uri;
+import android.os.Build;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,6 +76,7 @@ final class WatchNext {
 
     /** Everything to show, newest first (off the main thread: these are content provider queries). */
     static List<Item> load(Context c) {
+        if (Build.VERSION.SDK_INT < 26) return Collections.emptyList();   // the TV's lists are Android 8+
         if (!allowed(c)) return Collections.emptyList();
         ContentResolver cr = c.getContentResolver();
         List<Item> all = new ArrayList<>(read(cr, TvContract.WatchNextPrograms.CONTENT_URI));

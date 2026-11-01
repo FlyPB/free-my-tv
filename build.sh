@@ -3,10 +3,16 @@
 # Needs a JDK (17+) and the Android SDK command-line tools (build-tools 34+, platform android-34). See README.md.
 #   ./build.sh             with config.properties (your city, your TMDB key)
 #   ./build.sh --generic   without it, as the APK on GitHub's releases: no key, and the TV's time zone gives the city
+#   ./build.sh --min-sdk=25  for a TV that runs Android 7 (the floor is 26, Android 8)
 set -euo pipefail
 cd "$(dirname "$0")"
 GENERIC=false
-for arg in "$@"; do [ "$arg" = "--generic" ] && GENERIC=true; done
+MIN_SDK=26
+for arg in "$@"; do
+  [ "$arg" = "--generic" ] && GENERIC=true
+  case "$arg" in --min-sdk=*) MIN_SDK="${arg#--min-sdk=}" ;; esac
+done
+case "$MIN_SDK" in ''|*[!0-9]*) echo "--min-sdk must be a number (got \"$MIN_SDK\")" >&2; exit 1 ;; esac
 
 # --- Tools
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -163,7 +169,7 @@ mkdir -p out/res/xml
 "$BT/aapt2" compile --dir out/res -o out/res-gen.zip
 # Fonts uncompressed: Android reads them straight from the APK.
 "$BT/aapt2" link -o out/base.apk -I "$AJ" --manifest app/AndroidManifest.xml --java out/gen out/res.zip out/res-gen.zip \
-  --min-sdk-version 26 --target-sdk-version 33 -A app/assets -0 ttf
+  --min-sdk-version "$MIN_SDK" --target-sdk-version 33 -A app/assets -0 ttf
 # Windows aapt2 packs assets with backslash separators ("assets/symbols\x.png") and Android
 # cannot find them: the home screen loses its icons and fonts. Rename the zip entries to "/".
 case "$(uname -s 2>/dev/null)" in
@@ -220,7 +226,7 @@ apksigner() {
 }
 "$JAVAC" -nowarn -Xlint:-options -source 8 -target 8 -bootclasspath "$AJ$CPSEP$BT/core-lambda-stubs.jar" -classpath "$AJ" \
   -encoding UTF-8 -d out/classes $(find app/src out/gen -name '*.java')
-d8 --release --min-api 26 --lib "$AJ" --output out $(find out/classes -name '*.class')
+d8 --release --min-api "$MIN_SDK" --lib "$AJ" --output out $(find out/classes -name '*.class')
 if command -v zip >/dev/null; then (cd out && zip -qj base.apk classes.dex)
 else "${JAVA_HOME:+$JAVA_HOME/bin/}jar" -u -M -f out/base.apk -C out classes.dex; fi # Git Bash has no zip
 "$BT/zipalign" -f -p 4 out/base.apk out/aligned.apk

@@ -519,7 +519,8 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
         if (connectivity != null && !networkRegistered) {
             try {
                 if (connectivity.getActiveNetwork() == null) setNetwork(0);
-                connectivity.registerDefaultNetworkCallback(networkCallback, handler);
+                if (Build.VERSION.SDK_INT >= 26) connectivity.registerDefaultNetworkCallback(networkCallback, handler);
+                else connectivity.registerDefaultNetworkCallback(networkCallback);   // Android 7: no handler
                 networkRegistered = true;
             } catch (RuntimeException ignored) {
             }

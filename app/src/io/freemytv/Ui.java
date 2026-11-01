@@ -88,10 +88,9 @@ final class Ui {
     private static Typeface font(AssetManager a, int opticalSize, int weight) {
         if (has(a, FONT)) {
             try {
-                Typeface t = new Typeface.Builder(a, FONT)
-                        .setFontVariationSettings("'opsz' " + opticalSize + ", 'wght' " + weight).build();
+                Typeface t = Variable.create(a, opticalSize, weight);
                 if (t != null) return t;
-            } catch (RuntimeException ignored) {
+            } catch (RuntimeException | LinkageError ignored) {
             }
         }
         // Typeface.create(family, weight, italic) is Android 9+; Android 8 only has regular and bold.
@@ -104,6 +103,24 @@ final class Ui {
         static Typeface create(int weight) {
             return Typeface.create(Typeface.DEFAULT, weight, false);
         }
+    }
+
+    /** The variable font (Typeface.Builder) is Android 9+: only this class touches it, so the older ones still verify. */
+    private static final class Variable {
+        static Typeface create(AssetManager a, int opticalSize, int weight) {
+            return new Typeface.Builder(a, FONT)
+                    .setFontVariationSettings("'opsz' " + opticalSize + ", 'wght' " + weight).build();
+        }
+    }
+
+    /** String.join is Android 8+; this one joins on Android 7 too (the TV's lists and the switch's messages). */
+    static String join(String separator, List<String> parts) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.size(); i++) {
+            if (i > 0) sb.append(separator);
+            sb.append(parts.get(i));
+        }
+        return sb.toString();
     }
 
     private static final String FONT = "fonts/InterVariable.ttf";

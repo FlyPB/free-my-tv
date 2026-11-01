@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -1200,7 +1201,7 @@ final class HomeApps {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
         if (icon == null) return darkTile(TILE_W, TILE_H);
-        boolean adaptive = icon instanceof AdaptiveIconDrawable;
+        boolean adaptive = Build.VERSION.SDK_INT >= 26 && Adaptive.is(icon);
         // Drawn at the icon's own resolution (the whole tile, so the squircle's edge is smooth too), then filtered down.
         float drawn = TILE_H * (adaptive ? 0.56f * 1.5f : 0.46f);
         float k = detail(icon, drawn, drawn);
@@ -1212,11 +1213,10 @@ final class HomeApps {
         if (adaptive) {
             // Adaptive icon: the layers in a squircle, like an Apple icon. Drawn apart, then filling an anti-aliased
             // rounded rectangle (clipPath leaves stair-stepped corners).
-            AdaptiveIconDrawable a = (AdaptiveIconDrawable) icon;
             Bitmap layers = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas lc = new Canvas(layers);
             int pad = size / 4;
-            for (Drawable layer : new Drawable[] {a.getBackground(), a.getForeground()}) {
+            for (Drawable layer : Adaptive.layers(icon)) {
                 if (layer == null) continue;
                 layer.setBounds(-pad, -pad, size + pad, size + pad);
                 layer.draw(lc);
@@ -1241,8 +1241,7 @@ final class HomeApps {
     /**
      * How much bigger than w × h to draw d so it's near its own resolution (vectors: 2×), at most 2×: after an update
      * every tile is made again, some on the UI thread.
-     */
-    private static float detail(Drawable d, float w, float h) {
+     */    private static float detail(Drawable d, float w, float h) {
         int iw = d.getIntrinsicWidth(), ih = d.getIntrinsicHeight();
         float k = iw > 0 && ih > 0 ? Math.max(iw / w, ih / h) : 2f;
         return Math.max(1f, Math.min(2f, k));
@@ -1253,6 +1252,16 @@ final class HomeApps {
         Bitmap out = Ui.downscale(big, w, h);
         if (out != big) big.recycle();
         return out;
+    }
+
+    /** The adaptive icon (Android 8+): only this class touches it, so HomeApps still verifies on Android 7. */
+    private static final class Adaptive {
+        static boolean is(Drawable icon) { return icon instanceof AdaptiveIconDrawable; }
+
+        static Drawable[] layers(Drawable icon) {
+            AdaptiveIconDrawable a = (AdaptiveIconDrawable) icon;
+            return new Drawable[] {a.getBackground(), a.getForeground()};
+        }
     }
 
     /** Settings and the like: the icon in white on a dark card. */

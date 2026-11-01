@@ -993,7 +993,7 @@ final class Recs {
             p.pkg = STREMIO;
             p.link = "stremio:///detail/" + (p.kind.equals("movie") ? "movie" : "series") + "/" + imdb;
         }
-        p.meta = String.join(" · ", parts);
+        p.meta = Ui.join(" · ", parts);
         p.detailed = true;
     }
 
@@ -1278,7 +1278,7 @@ final class Recs {
                 String length = kind.equals("movie") ? runtime(m.optInt("duration") / 60000) : seasons(m.optInt("childCount"));
                 if (length != null) parts.add(length);
                 parts.add("Plex");
-                p.meta = String.join(" · ", parts);
+                p.meta = Ui.join(" · ", parts);
                 p.detailed = true;
                 out.add(p);
             }
