@@ -87,6 +87,33 @@ adb shell "nohup logcat -v time -s FreeMyTV > /sdcard/fm.log 2>&1 &"
 adb connect 192.168.0.232:5555 && adb pull /sdcard/fm.log
 ```
 
+## O boot: a tela inicial não subia sozinha
+
+Ao ligar a box depois de um desligamento, a ROM dela subia **o launcher dela** (o `com.oranth.launcher`,
+que o Free My TV desliga ✗) e a tela inicial do Free My TV não aparecia: era preciso abrir pelo menu de
+aplicativos.
+
+Duas coisas no projeto foram a causa:
+
+1. A linha **Ao ligar** estava travada nesta box (*Indisponível* ✗): ela exigia Live TV para a linha
+   inteira ✗, e esta box não tem tuner ✗ — mas a opção *"Início"* não precisa de tuner ✗. Agora só o
+   valor *"Live TV"* exige ✗, e os outros dois são os que a linha oferece ✓.
+2. Em **Ao ligar → Início**, o app só devolvia a tela quando um app de Live TV tomava a frente ✗ — e
+   nunca *começava* a nossa ✗. Agora, quando a nossa tela não sobe (a box mostrou a dela ✗) e ninguém
+   mexeu no controle há um tempo (o boot da box conta como "alguém mexeu" ✗, por isso a espera), a nossa
+   toma a tela ✓.
+
+O log depois do boot:
+
+```
+at power-on: our home screen wasn't up (com.oranth.launcher), bringing it up
+```
+
+> **Ao testar isso, o `adb` do computador atrapalha**: o `adbd` da box atende **um cliente por vez** ✗,
+> e o `adb` do PC (que reconecta sozinho ✗) toma a vaga ✗ — aí o app não consegue falar com a TV ✗ e o
+> boot check falha com *"o ADB da TV não respondeu"* ✗. Para testar o boot, mande `adb reboot` e **mate o
+> servidor adb do PC** (`adb kill-server`) logo depois ✗, e só reconecte depois de um minuto ✗.
+
 ## O que mudou no app (12 arquivos, sem commit)
 
 | Arquivo | Mudança | Motivo |
