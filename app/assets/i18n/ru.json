@@ -257,6 +257,7 @@
  "Sunset {time}": "Закат {time}",
  "Switching takes a few seconds; the screen blinks while it measures.": "Переключение занимает пару секунд; при замерах экран мигает.",
  "Switching the home screen and screensaver…": "Переключение главного экрана и заставки…",
+ "Switching to {mode} once fills its column.": "Одно переключение на {mode} заполнит колонку.",
  "System": "Система",
  "S{season} E{episode}": "С{season} Э{episode}",
  "TCL Channel button": "Кнопка TCL Channel",

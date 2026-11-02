@@ -257,6 +257,7 @@
  "Sunset {time}": "일몰 {time}",
  "Switching takes a few seconds; the screen blinks while it measures.": "전환에 몇 초가 걸리며, 측정하는 동안 화면이 깜박입니다.",
  "Switching the home screen and screensaver…": "홈 화면과 화면 보호기 전환 중…",
+ "Switching to {mode} once fills its column.": "{mode}(으)로 한 번 전환하면 해당 열이 채워집니다.",
  "System": "시스템",
  "S{season} E{episode}": "시즌 {season} {episode}화",
  "TCL Channel button": "TCL Channel 버튼",

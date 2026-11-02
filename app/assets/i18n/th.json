@@ -257,6 +257,7 @@
  "Sunset {time}": "พระอาทิตย์ตก {time}",
  "Switching takes a few seconds; the screen blinks while it measures.": "การสลับใช้เวลาสองสามวินาที หน้าจอจะกะพริบระหว่างวัดผล",
  "Switching the home screen and screensaver…": "กำลังสลับหน้าหลักและสกรีนเซฟเวอร์…",
+ "Switching to {mode} once fills its column.": "การสลับไปที่ {mode} ครั้งหนึ่งจะเติมคอลัมน์นั้น",
  "System": "ระบบ",
  "S{season} E{episode}": "ซีซัน {season} ตอน {episode}",
  "TCL Channel button": "ปุ่ม TCL Channel",

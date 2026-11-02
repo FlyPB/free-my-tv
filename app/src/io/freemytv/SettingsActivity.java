@@ -723,7 +723,15 @@ public class SettingsActivity extends Activity {
                 c.drawText(metric(a, rows[i][1], waits && current == a), colA, base, cellValue);
                 c.drawText(metric(b, rows[i][1], waits && current == b), colB, base, cellValue);
             }
-            return y + (46 + 40 * rows.length) * k;
+            float next = y + (46 + 40 * rows.length) * k;
+            // A mode that was never switched to has no numbers yet: say how to get them.
+            if (a == null || b == null) {
+                String line = Ui.trf("Switching to {mode} once fills its column.", "mode",
+                        a == null ? Ui.tr("Original") : "Free My TV");
+                c.drawText(TextUtils.ellipsize(line, notice, 790 * k, TextUtils.TruncateAt.END).toString(), x, next + 6 * k, notice);
+                next += 30 * k;
+            }
+            return next;
         }
 
         private void drawNotices(Canvas c, float y) {

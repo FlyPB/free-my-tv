@@ -257,6 +257,7 @@
  "Sunset {time}": "日落時間 {time}",
  "Switching takes a few seconds; the screen blinks while it measures.": "切換需要幾秒鐘，測量期間螢幕可能會閃爍。",
  "Switching the home screen and screensaver…": "正在切換主畫面和螢幕保護程式…",
+ "Switching to {mode} once fills its column.": "切換到 {mode} 一次即可填滿該欄。",
  "System": "系統",
  "S{season} E{episode}": "第{season}季 第{episode}集",
  "TCL Channel button": "TCL Channel 按鈕",

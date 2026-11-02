@@ -257,6 +257,7 @@
  "Sunset {time}": "सूर्यास्त {time}",
  "Switching takes a few seconds; the screen blinks while it measures.": "बदलने में कुछ सेकंड लगते हैं; मापते समय स्क्रीन झपकती है।",
  "Switching the home screen and screensaver…": "होम स्क्रीन और स्क्रीनसेवर बदले जा रहे हैं…",
+ "Switching to {mode} once fills its column.": "{mode} पर एक बार स्विच करने से उसका कॉलम भर जाता है।",
  "System": "सिस्टम",
  "S{season} E{episode}": "S{season} E{episode}",
  "TCL Channel button": "TCL Channel बटन",
