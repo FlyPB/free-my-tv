@@ -113,6 +113,27 @@ O app já separa os dois temas (`tone(dia, noite)` ✓, com *Tema* em *Ajustes d
 
 O backup do antes está em `backup/FreeMyTV-antes-do-design.apk` ✓, nas telas `1-…` a `7-…` ✓ e na tag `antes-do-design` ✓.
 
+## Uma loja de apps independente: Aurora Store
+
+A box não precisa da Google Play Store para instalar apps: o **Aurora Store** (código aberto ✓) é um
+cliente da Play Store que **não precisa de conta** ✓ (login anônimo ✓) e **não precisa do Google
+Play Services** ✓ — a build do F-Droid ✓ (a do GitHub precisa do GMS ✓).
+
+| | |
+|---|---|
+| **Versão** | 4.8.4 (versionCode 76 ✓), `com.aurora.store` ✓, minSdk 23 ✓ (cabe no 7.1.2 ✓) |
+| **De onde** | <https://f-droid.org/packages/com.aurora.store/> ✓ (o projeto não publica release no GitHub ✓ — fica no GitLab ✓, só com o código-fonte ✓) |
+| **Arquivo** | `AuroraStore-4.8.4-fdroid.apk` (9,4 MB ✓), SHA-256 `FD9C75D90D0F4A7C132B9B4A5A2CF1992A45E03B8D8FF988B7DCFBC0DB2C4D11` ✓ |
+| **Instalar de novo** | `adb install -r tx9/AuroraStore-4.8.4-fdroid.apk` ✓ |
+
+Na primeira abertura ele pergunta como quer entrar ✓ — o **anônimo** ✓ é o que dispensa a conta ✓
+(a Play Store original da box fica aí, mas não é precisa ✓). O catálogo abre em português ✓, com os
+apps do Brasil em "Apps nacionais" ✓, e o botão de download ✓ instala direto (o Android 7 não pede
+permissão de "instalar apps desconhecidos" ✓ — isso só existe do Android 8 em diante ✓).
+
+> O `*.apk` está no `.gitignore` ✓: os dois APKs da pasta (o do Free My TV ✓ e o do Aurora ✓) ficam
+> só na sua máquina ✓, e o que vai para o git é o texto ✓.
+
 ## O boot: a tela inicial não subia sozinha
 
 Ao ligar a box depois de um desligamento, a ROM dela subia **o launcher dela** (o `com.oranth.launcher`,
