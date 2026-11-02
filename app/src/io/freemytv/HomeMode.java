@@ -565,6 +565,9 @@ final class HomeMode {
             String home = originalHome(s);
             if (home.isEmpty() || home.startsWith(PKG + "/")) {
                 String found = currentHome(adb);
+                // Android 7 has no HOME role to ask, and the query may not answer either: the TV's own launcher is
+                // then the one to record (before ours takes the Home button and its filter goes with it).
+                if (found == null) found = stockHome(adb);
                 home = found != null ? realHome(found) : "";
                 if (home.isEmpty()) AppLog.w("original home screen not recorded (HOME resolves to \"" + homeHolder(adb) + "\"): Original will pick the TV's own");
             }
