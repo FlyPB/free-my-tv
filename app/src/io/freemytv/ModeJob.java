@@ -22,7 +22,8 @@ import java.nio.charset.StandardCharsets;
 public class ModeJob extends JobService {
     static final String APPLY = "apply", VERIFY = "verify", REVERT = "revert", MEMORY = "memory", REMOTE = "remote",
             PLAYING = "playing", UPDATE = "update", INSTALL = "install", GRANT_WATCH = "watchGrant",
-            REVOKE_WATCH = "watchRevoke", POWER_ON = "powerOn", STORE = "store";   // job ids come from these names: keep them apart
+            REVOKE_WATCH = "watchRevoke", POWER_ON = "powerOn", STORE = "store", POWER = "power";
+    // job ids come from these names: keep them apart
 
     @Override public boolean onStartJob(JobParameters params) {
         PersistableBundle extras = params.getExtras();
@@ -47,6 +48,7 @@ public class ModeJob extends JobService {
                     case REVOKE_WATCH: HomeMode.revokeWatchNow(app); break;
                     case POWER_ON: HomeMode.powerOnNow(app); break;
                     case STORE: HomeMode.storeNow(app, mode); break;   // the store's package comes in the mode slot
+                    case POWER: HomeMode.powerNow(app, mode); break;   // "off" or "reboot", in the mode slot too
                     default: break;
                 }
             } catch (Throwable t) {
@@ -74,6 +76,11 @@ public class ModeJob extends JobService {
     /** Schedules the job that swaps the app store (the package goes in the "mode" slot). */
     static long scheduleStore(Context c, String pkg) {
         return schedule(c, STORE, pkg, 0);
+    }
+
+    /** Schedules the job that shuts the TV down or restarts it ("off" or "reboot", in the "mode" slot). */
+    static long schedulePower(Context c, String what) {
+        return schedule(c, POWER, what, 0);
     }
 
     /**

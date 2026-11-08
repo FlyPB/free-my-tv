@@ -729,6 +729,18 @@ final class HomeMode {
         }
     }
 
+    /**
+     * Shuts the TV down or restarts it, through the TV's own ADB: the shut down is the power key (what a short press
+     * on the remote does, without holding it down) and the restart is the TV's own command.
+     */
+    static void powerNow(Context c, String what) {
+        try (Adb adb = connect(c, state(c))) {
+            adb.shell("reboot".equals(what) ? "reboot" : "input keyevent 26");
+        } catch (IOException e) {
+            AppLog.w("power: " + e.getMessage());
+        }
+    }
+
     static String bricksText() {
         return Ui.tr("On this TV model, switching the home screen kept a TV from starting. Free My TV stays an app here: open it from your apps.");
     }
