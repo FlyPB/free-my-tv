@@ -42,6 +42,7 @@
  "Continue watching": "देखना जारी रखें",
  "Continue: S{s} E{e}": "जारी रखें: S{s} E{e}",
  "Copy the API key it gives you.": "आपको मिली API कुंजी कॉपी करें।",
+ "Couldn't change the app store: {error}": "ऐप स्टोर बदला नहीं जा सका: {error}",
  "Couldn't check Free My TV: {error}": "Free My TV की जाँच नहीं हो सकी: {error}",
  "Couldn't go back to the original: {error}": "मूल पर वापस नहीं जा सके: {error}",
  "Couldn't open TV Settings": "TV सेटिंग नहीं खुल सकी",

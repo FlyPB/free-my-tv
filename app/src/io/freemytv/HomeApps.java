@@ -296,6 +296,8 @@ final class HomeApps {
     /** Only native stores with a launcher entry; no browser fallback or package installation. */
     static String storePackage(Context c) {
         PackageManager pm = c.getPackageManager();
+        String chosen = Prefs.store();   // the one picked in Home Settings > App Store
+        if (!chosen.isEmpty() && launchIntent(pm, chosen) != null) return chosen;
         String first = HomeMode.AMAZON ? "com.amazon.venezia" : "com.android.vending";
         String second = HomeMode.AMAZON ? "com.android.vending" : "com.amazon.venezia";
         if (launchIntent(pm, first) != null) return first;

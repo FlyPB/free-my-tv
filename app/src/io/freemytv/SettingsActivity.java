@@ -273,6 +273,8 @@ public class SettingsActivity extends Activity {
                     if (newest != null) announceForAccessibility(newest.optString("text"));
                 }
                 wasBusy = nowBusy;
+                // The app store is swapped by a job in the main process: its choice arrives here (the reload reads it).
+                Prefs.reload();
                 // Redrawn only when something shown changed: also My Photos' count (Immich's arrive while it shows) and
                 // the minute (the notices' "{n} min ago").
                 String stamp = state.toString() + recs.toString() + updates.toString() + ":" + sleepLeft + ":" + whyNow
@@ -993,9 +995,10 @@ public class SettingsActivity extends Activity {
          *  updates (the last row). */
         private static final int LANGUAGE_ROW = 0, TEMPERATURE_ROW = 1, THEME_ROW = 2, CLOCK_ROW = 3, PHOTOS_ROW = 4,
                 WALLPAPER_ROW = 5, SAVER_PHOTO_ROW = 6, SOUNDS_ROW = 7, TOP_ROW = 8, PICKS_ROW = 9, WATCH_ROW = 10,
-                SAVER_ROW = 11, ANDROID_APPS_ROW = 12, STATUS_ICONS_ROW = 13, RECENTS_ROW = 14, POWER_ON_ROW = 15,
-                WEATHER_ROW = 16, CITY_ROW = 17, FORECAST_ROW = 18, PLAYING_ROW = 19, HOME_ROW = Config.HOME_ASSISTANT ? 20 : -1,
-                QUOTES_ROW = Config.HOME_ASSISTANT ? 21 : 20, COIN_ROWS = QUOTES_ROW + 1;
+                SAVER_ROW = 11, ANDROID_APPS_ROW = 12, STORE_ROW = 13, STATUS_ICONS_ROW = 14, RECENTS_ROW = 15,
+                POWER_ON_ROW = 16, WEATHER_ROW = 17, CITY_ROW = 18, FORECAST_ROW = 19, PLAYING_ROW = 20,
+                HOME_ROW = Config.HOME_ASSISTANT ? 21 : -1, QUOTES_ROW = Config.HOME_ASSISTANT ? 22 : 21,
+                COIN_ROWS = QUOTES_ROW + 1;
         /** No "home" on Xiaomi TVs: their remote sends one Home press as a burst of presses (HomeView.BURST_MS). */
         private static final String[] RECENTS = RemoteKeys.XIAOMI ? new String[] {"off", "drawer"}
                 : new String[] {"off", "drawer", "home"};
@@ -1021,6 +1024,7 @@ public class SettingsActivity extends Activity {
             l.add(Ui.tr("Continue Watching apps"));
             l.add(Ui.tr("Watch from the screensaver"));
             l.add(Ui.tr("Android apps"));
+            l.add(Ui.tr("App Store"));
             l.add(Ui.tr("Status icons"));   // before the weather widget: City and Forecast are the widget's
             l.add(Ui.tr("Recent Apps"));
             l.add(Ui.tr("At power-on"));
@@ -1134,6 +1138,7 @@ public class SettingsActivity extends Activity {
             String power = Prefs.powerOn();
             v[POWER_ON_ROW] = power.equals("home") ? Ui.tr("power|Home screen") : power.equals("live") ? Ui.tr("Live TV") : Ui.tr("TV's choice");
             v[ANDROID_APPS_ROW] = onOff(Prefs.androidApps());
+            v[STORE_ROW] = storeName();
             v[STATUS_ICONS_ROW] = onOff(Prefs.statusIcons());
             v[WEATHER_ROW] = onOff(Prefs.weather());
             v[CITY_ROW] = !cityStatus.isEmpty() ? cityStatus : Prefs.city().isEmpty() ? "—" : Prefs.city();
@@ -1155,12 +1160,33 @@ public class SettingsActivity extends Activity {
         }
 
         /** The chosen photo's place among the photos ("Automatic" when there is none, or it is gone). */
-        private String photoValue(String name) {            List<File> list = Photos.files(getContext());
+        private String photoValue(String name) {
+            List<File> list = Photos.files(getContext());
             if (list.isEmpty()) return "—";
             for (int i = 0; i < list.size(); i++) if (list.get(i).getName().equals(name)) {
                 return Ui.trf("{i} of {n}", "i", i + 1, "n", list.size());
             }
             return Ui.tr("Automatic");
+        }
+
+        /** The store the "App Store" button opens, as the row shows it. */
+        private String storeName() {
+            String pkg = Prefs.store();
+            if (pkg.isEmpty()) {
+                String found = HomeApps.storePackage(getContext());
+                pkg = found == null ? "" : found;
+            }
+            if (pkg.equals("com.aurora.store")) return "Aurora Store";
+            if (pkg.equals("com.amazon.venezia")) return "Amazon Appstore";
+            return "Play Store";
+        }
+
+        /** The stores this TV has (the row's arrows go through them). */
+        private List<String> stores() {
+            List<String> out = new ArrayList<>();
+            android.content.pm.PackageManager pm = getContext().getPackageManager();
+            for (String pkg : HomeMode.STORES) if (pm.getLaunchIntentForPackage(pkg) != null) out.add(pkg);
+            return out;
         }
 
         /** "auto", then English and every language with a catalogue. */
@@ -1518,6 +1544,16 @@ public class SettingsActivity extends Activity {
                     return;
                 }
                 case ANDROID_APPS_ROW: Prefs.setAndroidApps(!Prefs.androidApps()); break;
+                case STORE_ROW: {
+                    // The stores this TV has, in turn: the one in use opens the "App Store" button, the others go off.
+                    List<String> list = stores();
+                    if (list.isEmpty()) return;
+                    int at = list.indexOf(Prefs.store());
+                    if (at < 0) at = 0;
+                    String next = list.get((at + dir + list.size()) % list.size());
+                    ModeJob.scheduleStore(getContext(), next);   // the job saves the choice and swaps the stores
+                    return;
+                }
                 case STATUS_ICONS_ROW: {
                     boolean on = !Prefs.statusIcons();
                     Prefs.setStatusIcons(on);

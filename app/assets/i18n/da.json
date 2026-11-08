@@ -42,6 +42,7 @@
  "Continue watching": "Fortsæt med at se",
  "Continue: S{s} E{e}": "Fortsæt: S{s} E{e}",
  "Copy the API key it gives you.": "Kopiér den API-nøgle, du får.",
+ "Couldn't change the app store: {error}": "Kunne ikke skifte appbutik: {error}",
  "Couldn't check Free My TV: {error}": "Kunne ikke tjekke Free My TV: {error}",
  "Couldn't go back to the original: {error}": "Kunne ikke vende tilbage til originalen: {error}",
  "Couldn't open TV Settings": "Kunne ikke åbne tv-indstillingerne",

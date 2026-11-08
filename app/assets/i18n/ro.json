@@ -42,6 +42,7 @@
  "Continue watching": "Continuă vizionarea",
  "Continue: S{s} E{e}": "Continuă: S{s} E{e}",
  "Copy the API key it gives you.": "Copiați cheia API primită.",
+ "Couldn't change the app store: {error}": "Nu am putut schimba magazinul de aplicații: {error}",
  "Couldn't check Free My TV: {error}": "Nu am putut verifica Free My TV: {error}",
  "Couldn't go back to the original: {error}": "Nu am putut reveni la original: {error}",
  "Couldn't open TV Settings": "Nu am putut deschide setările TV",

@@ -325,6 +325,14 @@ final class Prefs {
 
     static void setPowerOn(String v) { put("powerOn", v); }
 
+    /**
+     * The app store the "App Store" button opens (its package), or "" for the TV's own. Home Settings > App Store
+     * picks the one in use and turns the others off (HomeMode.storeNow).
+     */
+    static String store() { return sp().getString("store", ""); }
+
+    static void setStore(String pkg) { put("store", pkg); }
+
     // MARK: - Widgets and coins
 
     static boolean weather() { return sp().getBoolean("weather", true); }

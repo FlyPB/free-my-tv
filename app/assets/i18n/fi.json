@@ -42,6 +42,7 @@
  "Continue watching": "Jatka katsomista",
  "Continue: S{s} E{e}": "Jatka: K{s} J{e}",
  "Copy the API key it gives you.": "Kopioi saamasi API-avain.",
+ "Couldn't change the app store: {error}": "Sovelluskaupan vaihtaminen epäonnistui: {error}",
  "Couldn't check Free My TV: {error}": "Free My TV:n tarkistus epäonnistui: {error}",
  "Couldn't go back to the original: {error}": "Alkuperäiseen palaaminen epäonnistui: {error}",
  "Couldn't open TV Settings": "TV:n asetuksia ei voitu avata",

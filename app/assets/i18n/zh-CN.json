@@ -42,6 +42,7 @@
  "Continue watching": "继续观看",
  "Continue: S{s} E{e}": "继续：第{s}季 第{e}集",
  "Copy the API key it gives you.": "复制获得的 API 密钥。",
+ "Couldn't change the app store: {error}": "无法更换应用商店：{error}",
  "Couldn't check Free My TV: {error}": "无法检查 Free My TV：{error}",
  "Couldn't go back to the original: {error}": "无法恢复原样：{error}",
  "Couldn't open TV Settings": "无法打开电视设置",

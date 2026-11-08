@@ -42,6 +42,7 @@
  "Continue watching": "Continue watching",
  "Continue: S{s} E{e}": "Continue: S{s} E{e}",
  "Copy the API key it gives you.": "Copy the API key it gives you.",
+ "Couldn't change the app store: {error}": "Couldn't change the app store: {error}",
  "Couldn't check Free My TV: {error}": "Couldn't check Free My TV: {error}",
  "Couldn't go back to the original: {error}": "Couldn't go back to the original: {error}",
  "Couldn't open TV Settings": "Couldn't open TV Settings",

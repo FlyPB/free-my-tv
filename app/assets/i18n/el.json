@@ -42,6 +42,7 @@
  "Continue watching": "Συνέχεια παρακολούθησης",
  "Continue: S{s} E{e}": "Συνέχεια: S{s} E{e}",
  "Copy the API key it gives you.": "Αντιγράψτε το κλειδί API που θα λάβετε.",
+ "Couldn't change the app store: {error}": "Δεν ήταν δυνατή η αλλαγή του καταστήματος εφαρμογών: {error}",
  "Couldn't check Free My TV: {error}": "Δεν ήταν δυνατός ο έλεγχος του Free My TV: {error}",
  "Couldn't go back to the original: {error}": "Δεν ήταν δυνατή η επιστροφή στο αρχικό: {error}",
  "Couldn't open TV Settings": "Δεν ήταν δυνατό το άνοιγμα των ρυθμίσεων TV",

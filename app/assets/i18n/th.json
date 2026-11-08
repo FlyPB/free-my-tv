@@ -42,6 +42,7 @@
  "Continue watching": "เล่นต่อ",
  "Continue: S{s} E{e}": "เล่นต่อ: S{s} E{e}",
  "Copy the API key it gives you.": "คัดลอกคีย์ API ที่ได้รับ",
+ "Couldn't change the app store: {error}": "เปลี่ยนร้านค้าแอปไม่สำเร็จ: {error}",
  "Couldn't check Free My TV: {error}": "ตรวจสอบ Free My TV ไม่ได้: {error}",
  "Couldn't go back to the original: {error}": "กลับไปโหมดของเดิมไม่ได้: {error}",
  "Couldn't open TV Settings": "เปิดตั้งค่าทีวีไม่ได้",

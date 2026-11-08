@@ -697,6 +697,38 @@ final class HomeMode {
         }
     }
 
+    /**
+     * The app stores this app knows: the one the TV came with, Amazon's and Aurora Store (the independent one,
+     * which needs no Google account). Home Settings > App Store picks the one in use and turns the others off.
+     */
+    static final String[] STORES = {"com.android.vending", "com.amazon.venezia", "com.aurora.store"};
+
+    /**
+     * The store the "App Store" button opens: the chosen one is on, the others off (still installed, back with a
+     * button). The one turned off goes on the state's list, so "Original" brings it back.
+     */
+    static void storeNow(Context c, String pkg) {
+        if (pkg.isEmpty()) return;
+        Prefs.setStore(pkg);
+        try (Adb adb = connect(c, state(c))) {
+            Set<String> disabled = new HashSet<>(stringList(state(c), "disabled"));
+            for (String other : STORES) {
+                if (other.equals(pkg)) {
+                    if (adb.shell("pm enable " + other).contains("new state: enabled")) disabled.remove(other);
+                } else if (adb.shell("pm disable-user --user 0 " + other).contains("disabled-user")) {
+                    disabled.add(other);
+                }
+            }
+            JSONObject s = state(c);
+            s.put("disabled", new JSONArray(sorted(disabled)));
+            save(c, s);
+            AppLog.w("app store: " + pkg);
+        } catch (IOException | JSONException e) {
+            AppLog.w("app store: " + e.getMessage());
+            notice(c, Ui.trf("Couldn't change the app store: {error}", "error", e.getMessage()));
+        }
+    }
+
     static String bricksText() {
         return Ui.tr("On this TV model, switching the home screen kept a TV from starting. Free My TV stays an app here: open it from your apps.");
     }

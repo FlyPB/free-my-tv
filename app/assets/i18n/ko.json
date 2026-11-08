@@ -42,6 +42,7 @@
  "Continue watching": "이어서 보기",
  "Continue: S{s} E{e}": "이어서: S{s} E{e}",
  "Copy the API key it gives you.": "제공된 API 키를 복사하세요.",
+ "Couldn't change the app store: {error}": "앱 스토어를 변경할 수 없습니다: {error}",
  "Couldn't check Free My TV: {error}": "Free My TV를 확인하지 못했습니다: {error}",
  "Couldn't go back to the original: {error}": "원래대로 돌아가지 못했습니다: {error}",
  "Couldn't open TV Settings": "TV 설정을 열 수 없습니다.",
