@@ -131,8 +131,24 @@ Na primeira abertura ele pergunta como quer entrar ✓ — o **anônimo** ✓ é
 apps do Brasil em "Apps nacionais" ✓, e o botão de download ✓ instala direto (o Android 7 não pede
 permissão de "instalar apps desconhecidos" ✓ — isso só existe do Android 8 em diante ✓).
 
-> O `*.apk` está no `.gitignore` ✓: os dois APKs da pasta (o do Free My TV ✓ e o do Aurora ✓) ficam
-> só na sua máquina ✓, e o que vai para o git é o texto ✓.
+O **F-Droid** (`F-Droid.apk` na pasta ✓, `org.fdroid.fdroid` ✓, minSdk 24 ✓) também está
+instalado ✓: a outra loja que não precisa de conta ✓. As duas podem trocar de lugar em *Ajustes
+do Início → Loja de aplicativos* ✓ — a que está em uso abre o botão "Loja de aplicativos" ✓ e as
+outras ficam desligadas ✓ (sem desinstalar ✓, e o modo *Original* religa ✓).
+
+## O botão de Energia
+
+*Botões do Topo → Energia* ✓ coloca um botão novo no canto superior direito, ao lado da Loja de
+aplicativos ✓. Ele pergunta **Desligar** ou **Reiniciar** ✓ e pede confirmação ✓ antes de
+executar ✓ — sem isso era preciso segurar o botão de power do controle ✓.
+
+O *Desligar* é o botão de power (toque curto ✓ — nesta box desliga mesmo ✓) e o *Reiniciar* é o
+comando de reboot da própria TV ✓. Os dois passam pelo ADB dela ✓, como as trocas de modo ✓ (e
+precisam do ADB da TV livre ✗ — sem computador conectado ✓).
+
+O ícone (um arco com um traço ✓, como o do Material ✓) foi desenhado à mão ✓ (o `make_symbols.py`
+precisa do PIL ✗, que não está nesta máquina ✗) e registrado no script ✓, pra poder ser
+regenerado ✓.
 
 ## O boot: a tela inicial não subia sozinha
 

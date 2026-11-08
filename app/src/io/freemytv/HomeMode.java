@@ -698,10 +698,10 @@ final class HomeMode {
     }
 
     /**
-     * The app stores this app knows: the one the TV came with, Amazon's and Aurora Store (the independent one,
-     * which needs no Google account). Home Settings > App Store picks the one in use and turns the others off.
+     * The app stores this app knows: the one the TV came with, Amazon's, Aurora Store and F-Droid (the two that need
+     * no Google account). Home Settings > App Store picks the one in use and turns the others off.
      */
-    static final String[] STORES = {"com.android.vending", "com.amazon.venezia", "com.aurora.store"};
+    static final String[] STORES = {"com.android.vending", "com.amazon.venezia", "com.aurora.store", "org.fdroid.fdroid"};
 
     /**
      * The store the "App Store" button opens: the chosen one is on, the others off (still installed, back with a

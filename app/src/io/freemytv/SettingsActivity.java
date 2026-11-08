@@ -1177,6 +1177,7 @@ public class SettingsActivity extends Activity {
                 pkg = found == null ? "" : found;
             }
             if (pkg.equals("com.aurora.store")) return "Aurora Store";
+            if (pkg.equals("org.fdroid.fdroid")) return "F-Droid";
             if (pkg.equals("com.amazon.venezia")) return "Amazon Appstore";
             return "Play Store";
         }
