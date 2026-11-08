@@ -150,6 +150,12 @@ final class HomeMode {
         // HY300 projectors (Amlogic txhd2, Android 13): JmLauncher opens it from the Home button (JM_HOME); off only
         // once JM_HOME is ours
         HTC_HOME,                                                                     // the stock home (and an ad SDK)
+        // Amlogic (DroidLogic) boxes, as the TX9: the factory test, the screen mirroring app, the LED's status
+        // notification and the logs app
+        "com.cskj.factorytest",                                                          // factory test (demo)
+        "com.droidlogic.miracast",                                                       // screen mirroring app
+        "com.oranth.ledstatus",                                                         // the LED's status notification
+        "com.droidlogic.readlog",                                                       // the logs app
     };
 
     /** The voice assistant, only with disable_assistant=true in config.properties (the mic button stops working). */
@@ -220,6 +226,12 @@ final class HomeMode {
         "com.onn.bluetoothconnect", "com.onn.btpairoverlay", "com.onn.updatenotification", "com.gretzky.GlobalKey",
         "com.gretzky.hwinfo", "com.droidlogic", "com.droidlogic.tv.settings", "com.droidlogic.mictoggle",
         "com.droidlogic.launcher.provider", "com.droidlogic.android.tv.connecteddevices",
+        // Amlogic (DroidLogic) boxes, as the TX9 (Android 7.1.2): the tuner, the network, the remote, the updates, the
+        // media player, the box's settings and the installer that brings an APK in
+        "com.droidlogic.dig", "com.droidlogic.PPPoE", "com.droidlogic.inputmethod.remote",
+        "com.droidlogic.BluetoothRemote", "com.droidlogic.otaupgrade", "com.oranth.update",
+        "com.droidlogic.mediacenter", "com.droidlogic.SubTitleService", "com.droidlogic.appinstall",
+        "com.mbox.settings",
         // Wanbo projectors (T2 Ultra: a Skyworth board, Amlogic, Android TV 11): remote pairing and reconnect, Amlogic
         // overlay, settings and customization, projector service, Skyworth and OEM services, factory and QA tests
         "com.droidlogic.ble", "com.droidlogic.overlay", "com.mft.rcupair", "com.mtf.blereconnect", "com.mtf.customization",
