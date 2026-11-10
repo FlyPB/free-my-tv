@@ -451,9 +451,10 @@ final class HomeMode {
                     // It never came up: the TV started its own (which Free My TV turns off). Nothing has been touched for
                     // a while (some boxes count their own starting up as the user being there), so ours takes the
                     // screen; the TV may start over it, and the next round brings it back.
-                    if (lastUserActivity(adb) > SystemClock.elapsedRealtime() - 15_000) continue;   // touched: wait
+                    if (lastUserActivity(adb) > SystemClock.uptimeMillis() - 15_000) continue;   // touched: wait
                     String front = resumedPackage(adb);
-                    if (front != null && PKG.equals(front)) continue;   // ours is up: wait, the TV may start over it
+                    if (front == null) continue;   // unreadable: what can't be read counts as a key, nothing moves
+                    if (PKG.equals(front)) continue;   // ours is up: wait, the TV may start over it
                     adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
                     AppLog.w("at power-on: our home screen wasn't up (" + front + "), bringing it up");
                 } catch (IOException e) {
