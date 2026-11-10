@@ -17,12 +17,17 @@ var TV = (function () {
   // Tizen 2 (2016 TVs, WebKit 538) repaints every shadow on every frame of a focus animation: home.css turns them off.
   // So do LGs under 2 GB: an LG on webOS TV Lite 10 (MT5889, 1.3 GB, ratio 2) ran the shelf at 23-28 fps, 60 with lite
   // and 45 with only the shadows off (#318); a 43LR6700PSA on webOS TV Lite 8.5 (1.5 GB, ratio 1) at 45-50, 59 with
-  // lite and 55 with only the shadows off (#383). Samsungs under 2 GB get it only when they draw the page at twice its
-  // size: none at a ratio of 1 has been measured. deviceMemory (webOS 5+, Tizen 5+) is the nearest power of two, so it
-  // reads 1 up to about 1.5 GB.
+  // lite and 55 with only the shadows off (#383). Samsungs at that memory too: a 2021 UN50AU7700 (Tizen 6, 1.5 GB, ratio
+  // 1) still stutters at each move with flat alone (#461). deviceMemory (webOS 5+, Tizen 5+) is the nearest power of two,
+  // so it reads 1 up to about 1.5 GB.
   var lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 1;
-  if (tizen2 || (webos && lowMemory) || (samsung && lowMemory && (window.devicePixelRatio || 1) > 1)) {
-    document.documentElement.className += ' lite';
+  // webOS 1 to 3 (2014-2017, Chromium 38) have no deviceMemory, and their sets have 1 to 1.5 GB: lite too.
+  var chrome = /Chrome\/(\d+)/.exec(navigator.userAgent);
+  var oldWebos = webos && !navigator.deviceMemory && chrome && parseInt(chrome[1], 10) < 53;
+  if (tizen2 || oldWebos || ((webos || samsung) && lowMemory)) {
+    // webOS 3 on a 4K set (UH6150) re-rasterized ~300 ms of tiles at each move; with each tile and pick on its own
+    // compositor layer that fell to ~8 ms, and the focus can animate again (`layered` in home.css).
+    document.documentElement.className += oldWebos ? ' lite layered' : ' lite';
   } else if (samsung && navigator.deviceMemory && navigator.deviceMemory <= 2) {
     // Samsungs up to 2 GB keep the animations but not the soft shadows of the parts that move (home.css): a 2021 Frame
     // (QE55LS03A, Tizen 6, 2 GB, ratio 1) froze for up to 360 ms on each move along the picks and dropped 78 frames in
@@ -185,7 +190,7 @@ var TV = (function () {
   // (a 2016 KU6300, Tizen 2.4) can carry other ids for the same apps.
   var SAMSUNG_ICON_NAMES = {
     youtube: 'icons/youtube.png', primevideo: 'icons/prime.png', amazonprimevideo: 'icons/prime.png',
-    netflix: 'icons/netflix.svg', max: 'icons/max.svg', hbomax: 'icons/max.svg', spotify: 'icons/spotify.svg',
+    netflix: 'icons/netflix.svg', max: 'icons/max.svg', spotify: 'icons/spotify.svg',
     deezer: 'icons/deezer.svg', youtubekids: 'icons/youtubekids.svg', redbulltv: 'icons/redbull.svg', ted: 'icons/ted.svg',
     steamlink: 'icons/steam.svg', jellyfin: 'icons/jellyfin.svg', paramount: 'icons/paramountplus.svg',
     paramountplus: 'icons/paramountplus.svg', crunchyroll: 'icons/crunchyroll.svg', twitch: 'icons/twitch.svg',
