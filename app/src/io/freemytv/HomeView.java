@@ -456,6 +456,12 @@ final class HomeView extends ViewGroup implements Choreographer.FrameCallback, H
 
     /** Wi-Fi or Ethernet, for the icon at the top; none when the TV has no network. */
     private void setNetwork(int type) {
+        // Android 7's network callback has no handler of its own (the overload with one is Android 8 and later), so it
+        // comes on the system's thread: the icon is a view, and only the thread that made it may touch it.
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            handler.post(() -> setNetwork(type));
+            return;
+        }
         if (type == network) return;
         network = type;
         status.invalidate();
