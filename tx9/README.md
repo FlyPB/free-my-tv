@@ -177,6 +177,50 @@ at power-on: our home screen wasn't up (com.oranth.launcher), bringing it up
 > boot check falha com *"o ADB da TV não respondeu"* ✗. Para testar o boot, mande `adb reboot` e **mate o
 > servidor adb do PC** (`adb kill-server`) logo depois ✗, e só reconecte depois de um minuto ✗.
 
+### Depois de dias desligada: o launcher original abria no boot
+
+Em **15/11/2026** a box ficou **4 dias desligada da tomada** ✗ e, ao ligar, o **launcher original** ✗
+apareceu no lugar do Free My TV ✗ — e a caixa de avisos do app dizia *"O Início do Free My TV caiu 3 vezes
+seguidas; voltei para o Início original."* ✗
+
+Não era a box ✗: era um **crash do app** ✗, no log:
+
+```
+android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view
+hierarchy can touch its views.
+    at io.freemytv.HomeView.setNetwork(HomeView.java:461)
+    at io.freemytv.HomeView$3.onCapabilitiesChanged(HomeView.java:448)
+    at android.net.ConnectivityManager$CallbackHandler.handleMessage(...)
+```
+
+O aviso de rede que muda o **ícone de Wi-Fi** ✓ chega na **thread do sistema** ✗ no Android 7 ✗ (a
+sobrecarga de `registerDefaultNetworkCallback` que aceita um `Handler` é API 26 ✗), e o `invalidate()` na
+View estoura ✗.
+
+**Por que só depois de dias desligada** ✗: é uma **condição de corrida** ✗ — só quebra quando a rede
+**muda** depois que a tela já está desenhada ✗. Ligada de novo, o Wi-Fi só conecta **uns segundos depois**
+do boot ✗, bem depois da tela subir ✓; com a rede já de pé ✗ (boot normal ✗), o aviso chega antes de haver
+tela ✗ e nada quebra ✓.
+
+A tela caiu **3 vezes seguidas** ✗ → o **watchdog** do app ✓ (que existe para isso ✓) devolveu a TV para o
+launcher original ✓ e deixou o aviso ✓. O watchdog funcionou ✓ — quem errou foi o **código do Android 7** ✗.
+
+O conserto é uma linha ✗: o ícone de rede volta para a **thread da interface** ✓.
+
+```java
+if (Looper.myLooper() != Looper.getMainLooper()) {
+    handler.post(() -> setNetwork(type));
+    return;
+}
+```
+
+Testado ✗: reiniciar a box ✗ com o Wi-Fi conectando **depois** da tela ✓ (10:23:40 a tela ✓, 10:23:41 a
+rede ✓) — **nenhum crash** ✓ e a tela inicial **sobe sozinha** ✓.
+
+> Vale para **qualquer TV Android 7** ✗ (e para as de Android 8+ ✗ também ✗, se o callback chegar na
+> thread errada ✗). No upstream o app não sofre disso ✗ porque o `minSdk` é 26 ✓ e a sobrecarga com
+> `Handler` ✓ é sempre usada ✓.
+
 ## O que mudou no app (12 arquivos, sem commit)
 
 | Arquivo | Mudança | Motivo |
@@ -190,7 +234,7 @@ at power-on: our home screen wasn't up (com.oranth.launcher), bringing it up
 | `SleepOverlay.java` | canal de notificação isolado; `startService` no 7; `TYPE_SYSTEM_ALERT` | API 26 |
 | `HomeApps.java` | `AdaptiveIconDrawable` isolado | API 26 |
 | `Backdrop.java` | `Bitmap.Config.HARDWARE` isolado | API 26 |
-| `HomeView.java` | `registerDefaultNetworkCallback` sem handler no 7 | a sobrecarga com handler é API 26 |
+| `HomeView.java` | `registerDefaultNetworkCallback` sem handler no 7; o ícone de rede volta para a thread da interface | a sobrecarga com handler é API 26, e no 7 o aviso chega na thread do sistema ✗ |
 | `WatchNext.java` | Continue Watching vazio no 7 | `TvContract` é API 26 |
 | `ScreenBlur.java` | sem desfocar no 7 | `PixelCopy` de janela é API 26 |
 
