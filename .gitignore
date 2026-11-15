@@ -17,3 +17,6 @@ __pycache__/
 # macOS
 .DS_Store
 tools/.i18n-cache.json
+
+# The TX9's own project: the designs another tool drew, not part of the app
+tx9/stitch/
