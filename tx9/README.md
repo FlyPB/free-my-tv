@@ -1,0 +1,304 @@
+# TX9 (Amlogic p281) — a build do Free My TV para essa box
+
+Esta pasta é a **build e as notas da TV box TX9** do usuário (`192.168.0.232`): o APK que está
+instalado nela, o script que o recompila e o que foi preciso mudar no app para ele rodar.
+
+O projeto (Free My TV) não conhece essa box: ele foi feito para Google TV / Android TV **8 ou
+nover**, com `leanback`. A TX9 é uma box Android com launcher de TV, mas **Android 7.1.2** e sem
+`leanback`. As mudanças abaixo vivem no repositório, **sem commit** — o padrão do projeto continua
+Android 8+ (veja *Reverter*).
+
+## O aparelho
+
+| | |
+|---|---|
+| Modelo | TX9 (Amlogic p281), Android TV-like, `com.oranth.launcher` + `com.android.tv.settings` |
+| IP | `192.168.0.232` (Wi-Fi `wlan0`), fuso `America/Recife` → a cidade vem do fuso no build `--generic` |
+| Android | **7.1.2 (API 25)** — apesar de se anunciar como "8.1.0" |
+| Root | `adb shell` roda como root (`ro.debuggable=1`), `ro.adb.secure=0` |
+| ADB | `adbd` na 5555, **atende um cliente por vez** |
+
+### Como se descobriu o Android real
+
+O `ro.build.version.release` dizia `8.1.0`, mas `ro.build.version.sdk` era `25` — e o instalador
+recusava o APK (*`Requires newer sdk version #26 (current version is #25)`*). O que confirmou:
+
+- `ro.build.version.sdk` = **25** (o Android 8.1 lê o SDK dessa propriedade, então o sistema se
+  acha API 25);
+- `com.android.systemui` e `com.android.phone` = versão **7.1.2**; `com.android.settings` = 8.1.0;
+- sem o serviço `overlay` e sem `vibrator_manager` (só existem no Android 8+);
+- `APP_NOTIFICATION_SETTINGS` (API 26) não resolve nenhuma activity;
+- `cmd role` (Android 9+) não existe; `cmd uimode` (8+) também não.
+
+O "8.1.0" no fingerprint, no `display.id` e no patch de segurança (2017-12-01) é string do
+fabricante, não do sistema.
+
+## O APK
+
+| | |
+|---|---|
+| Arquivo | `FreeMyTV-tx9.apk` (1,6 MB) — a mesma build (mesmo código, mesma chave) que está instalada na box |
+| SHA-256 | `42A750CA5C9E2441ADE392E4928358D7A3D3EBA80E26C1D3443F9DB6FF512E7A` (o APK é recompilado a cada vez; o que importa para a TV é o certificado abaixo) |
+| Assinatura | `CN=Free My TV`, SHA-256 `4d395e7728d8554f93055db6de24a909a3eba39fdedbec1669fce90e2aeb516d` |
+| Chave | `freemytv.keystore` na raiz do projeto (senha `freemytv`, alias `freemytv`) |
+| Build | `./build.sh --generic --min-sdk=25` (sem `config.properties`: sem chave do TMDB, cidade pelo fuso) |
+
+A chave é **local**, não a de release do projeto (`b85d4ff6…`). Consequências: o app **não se
+atualiza sozinho** pelas releases do GitHub, e instalar uma release oficial exigiria desinstalar
+antes (assinatura diferente). Para atualizar esta box, recompile e reinstale com a **mesma**
+`freemytv.keystore`.
+
+`*.apk` e `*.keystore` estão no `.gitignore`: a pasta entra no git só com o texto e a imagem.
+
+## Recompilar
+
+```bash
+./tx9/build-tx9.sh              # só compila e copia para tx9/FreeMyTV-tx9.apk
+./tx9/build-tx9.sh --install    # compila, instala na box e solta a conexão
+```
+
+Duas particularidades desta máquina, já resolvidas no script:
+
+1. **Caminhos Windows no Git Bash.** Com caminhos POSIX (`/c/Users/...`), o Git Bash reescreve o
+   `-bootclasspath` do javac e os *lambda stubs* somem: `cannot find symbol: method metafactory`.
+   Com `C:/Users/...` funciona.
+2. **JDK 17.** O `d8` 8.2.2 (build-tools 34.0.0) não lê as classes que o javac do JDK 21 escreve
+   (`NullPointerException` em `DreamView$1.class`). O JDK 17 está em
+   `C:\Users\Fabio\AppData\Local\Android\jdk17\jdk-17.0.20.1+1`, e o SDK isolado com
+   build-tools 34.0.0 + platform android-34 (o do CI) em
+   `C:\Users\Fabio\AppData\Local\Android\Sdk34`.
+
+## Antes de trocar de modo: solte o computador
+
+O `adbd` dessa box **atende um cliente por vez**. Com o `adb` do PC conectado, o app não consegue
+falar com o ADB dela e a troca falha com *"o ADB da TV não respondeu"* (é o caso #221 do projeto).
+
+```bash
+adb disconnect 192.168.0.232:5555
+adb kill-server
+```
+
+Depois é só apertar na TV: **Free My TV → Início → Free My TV**. Para vigiar o que a TV registrou,
+o logcat pode rodar **dentro** da box (o `adb` do PC ocuparia a vaga):
+
+```bash
+adb shell "nohup logcat -v time -s FreeMyTV > /sdcard/fm.log 2>&1 &"
+# ... a pessoa troca de modo na TV ...
+adb connect 192.168.0.232:5555 && adb pull /sdcard/fm.log
+```
+
+## O design premium (em `stitch/`)
+
+Seis telas desenhadas no Stitch (`stitch/`): a inicial e os ajustes em **premium glass** (claro) e em **dark premium neon** (escuro), e a lista de apps nos dois. A paleta que veio de lá:
+
+| | Claro (premium glass) | Escuro (dark premium neon) |
+|---|---|---|
+| Fundo | `#0f172a` (tinta) sobre o branco gelo | `#05070a` com o brilho ciano |
+| Cartão/vidro | `rgba(255,255,255,0.65)`, borda `rgba(255,255,255,0.85)` | `rgba(15,23,42,0.65)`, borda `rgba(255,255,255,0.12)` |
+| Foco | `#ffffff` com o brilho do céu (`rgba(56,189,248,0.4)`) | **`#00f3ff`** (ciano neon), halo `0 0 35px rgba(0,243,255,0.45)` |
+
+O app já separa os dois temas (`tone(dia, noite)` ✓, com *Tema* em *Ajustes do Início* ✓), então a paleta entrou nos dois lados.
+
+**Aplicado** (`HomeView.java`):
+
+- O item em foco da prateleira ganha a **borda neon** e o **halo** ✓ (`#00f3ff` à noite, o azul do céu de dia ✓).
+- O **nome do app** aparece **embaixo do ícone** ✓ (o design mostra o nome ✓ — antes só o ícone ✓).
+- O botão do topo em foco trocou o **branco chapado** por um **anel neon** com o ícone na cor do foco ✓ (era o "sem vida" ✗).
+
+**Falta** (dá para o próximo passo):
+
+- O **cartão** do design: o app dentro de um cartão translúcido, quadrado, com o nome embaixo ✗ — hoje o tile **é** o ícone do app, em 16:9 ✓ (o formato dos banners de TV ✓). Mudar isso é mexer em `HomeApps` (o desenho do tile ✓) e no layout da prateleira ✓.
+- A paleta do **vidro** dos painéis (a barra da prateleira e as pílulas da gaveta ✗) ainda é a do app ✗ — o *Scene* desenha o vidro ✓ (e no Android 7 ele é o plano ✗, sem AGSL ✓).
+- O design mostra os **atalhos sempre visíveis** embaixo da prateleira ✗ — no app eles ficam na gaveta (que abre com ↓ ✓).
+
+O backup do antes está em `backup/FreeMyTV-antes-do-design.apk` ✓, nas telas `1-…` a `7-…` ✓ e na tag `antes-do-design` ✓.
+
+## Uma loja de apps independente: Aurora Store
+
+A box não precisa da Google Play Store para instalar apps: o **Aurora Store** (código aberto ✓) é um
+cliente da Play Store que **não precisa de conta** ✓ (login anônimo ✓) e **não precisa do Google
+Play Services** ✓ — a build do F-Droid ✓ (a do GitHub precisa do GMS ✓).
+
+| | |
+|---|---|
+| **Versão** | 4.8.4 (versionCode 76 ✓), `com.aurora.store` ✓, minSdk 23 ✓ (cabe no 7.1.2 ✓) |
+| **De onde** | <https://f-droid.org/packages/com.aurora.store/> ✓ (o projeto não publica release no GitHub ✓ — fica no GitLab ✓, só com o código-fonte ✓) |
+| **Arquivo** | `AuroraStore-4.8.4-fdroid.apk` (9,4 MB ✓), SHA-256 `FD9C75D90D0F4A7C132B9B4A5A2CF1992A45E03B8D8FF988B7DCFBC0DB2C4D11` ✓ |
+| **Instalar de novo** | `adb install -r tx9/AuroraStore-4.8.4-fdroid.apk` ✓ |
+
+Na primeira abertura ele pergunta como quer entrar ✓ — o **anônimo** ✓ é o que dispensa a conta ✓
+(a Play Store original da box fica aí, mas não é precisa ✓). O catálogo abre em português ✓, com os
+apps do Brasil em "Apps nacionais" ✓, e o botão de download ✓ instala direto (o Android 7 não pede
+permissão de "instalar apps desconhecidos" ✓ — isso só existe do Android 8 em diante ✓).
+
+O **F-Droid** (`F-Droid.apk` na pasta ✓, `org.fdroid.fdroid` ✓, minSdk 24 ✓) também está
+instalado ✓: a outra loja que não precisa de conta ✓. As duas podem trocar de lugar em *Ajustes
+do Início → Loja de aplicativos* ✓ — a que está em uso abre o botão "Loja de aplicativos" ✓ e as
+outras ficam desligadas ✓ (sem desinstalar ✓, e o modo *Original* religa ✓).
+
+## O botão de Energia
+
+*Botões do Topo → Energia* ✓ coloca um botão novo no canto superior direito, ao lado da Loja de
+aplicativos ✓. Ele pergunta **Desligar** ou **Reiniciar** ✓ e pede confirmação ✓ antes de
+executar ✓ — sem isso era preciso segurar o botão de power do controle ✓.
+
+O *Desligar* é o botão de power (toque curto ✓ — nesta box desliga mesmo ✓) e o *Reiniciar* é o
+comando de reboot da própria TV ✓. Os dois passam pelo ADB dela ✓, como as trocas de modo ✓ (e
+precisam do ADB da TV livre ✗ — sem computador conectado ✓).
+
+O ícone (um arco com um traço ✓, como o do Material ✓) foi desenhado à mão ✓ (o `make_symbols.py`
+precisa do PIL ✗, que não está nesta máquina ✗) e registrado no script ✓, pra poder ser
+regenerado ✓.
+
+## O boot: a tela inicial não subia sozinha
+
+Ao ligar a box depois de um desligamento, a ROM dela subia **o launcher dela** (o `com.oranth.launcher`,
+que o Free My TV desliga ✗) e a tela inicial do Free My TV não aparecia: era preciso abrir pelo menu de
+aplicativos.
+
+Duas coisas no projeto foram a causa:
+
+1. A linha **Ao ligar** estava travada nesta box (*Indisponível* ✗): ela exigia Live TV para a linha
+   inteira ✗, e esta box não tem tuner ✗ — mas a opção *"Início"* não precisa de tuner ✗. Agora só o
+   valor *"Live TV"* exige ✗, e os outros dois são os que a linha oferece ✓.
+2. Em **Ao ligar → Início**, o app só devolvia a tela quando um app de Live TV tomava a frente ✗ — e
+   nunca *começava* a nossa ✗. Agora, quando a nossa tela não sobe (a box mostrou a dela ✗) e ninguém
+   mexeu no controle há um tempo (o boot da box conta como "alguém mexeu" ✗, por isso a espera), a nossa
+   toma a tela ✓.
+
+O log depois do boot:
+
+```
+at power-on: our home screen wasn't up (com.oranth.launcher), bringing it up
+```
+
+> **Ao testar isso, o `adb` do computador atrapalha**: o `adbd` da box atende **um cliente por vez** ✗,
+> e o `adb` do PC (que reconecta sozinho ✗) toma a vaga ✗ — aí o app não consegue falar com a TV ✗ e o
+> boot check falha com *"o ADB da TV não respondeu"* ✗. Para testar o boot, mande `adb reboot` e **mate o
+> servidor adb do PC** (`adb kill-server`) logo depois ✗, e só reconecte depois de um minuto ✗.
+
+### Depois de dias desligada: o launcher original abria no boot
+
+Em **15/11/2026** a box ficou **4 dias desligada da tomada** ✗ e, ao ligar, o **launcher original** ✗
+apareceu no lugar do Free My TV ✗ — e a caixa de avisos do app dizia *"O Início do Free My TV caiu 3 vezes
+seguidas; voltei para o Início original."* ✗
+
+Não era a box ✗: era um **crash do app** ✗, no log:
+
+```
+android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view
+hierarchy can touch its views.
+    at io.freemytv.HomeView.setNetwork(HomeView.java:461)
+    at io.freemytv.HomeView$3.onCapabilitiesChanged(HomeView.java:448)
+    at android.net.ConnectivityManager$CallbackHandler.handleMessage(...)
+```
+
+O aviso de rede que muda o **ícone de Wi-Fi** ✓ chega na **thread do sistema** ✗ no Android 7 ✗ (a
+sobrecarga de `registerDefaultNetworkCallback` que aceita um `Handler` é API 26 ✗), e o `invalidate()` na
+View estoura ✗.
+
+**Por que só depois de dias desligada** ✗: é uma **condição de corrida** ✗ — só quebra quando a rede
+**muda** depois que a tela já está desenhada ✗. Ligada de novo, o Wi-Fi só conecta **uns segundos depois**
+do boot ✗, bem depois da tela subir ✓; com a rede já de pé ✗ (boot normal ✗), o aviso chega antes de haver
+tela ✗ e nada quebra ✓.
+
+A tela caiu **3 vezes seguidas** ✗ → o **watchdog** do app ✓ (que existe para isso ✓) devolveu a TV para o
+launcher original ✓ e deixou o aviso ✓. O watchdog funcionou ✓ — quem errou foi o **código do Android 7** ✗.
+
+O conserto é uma linha ✗: o ícone de rede volta para a **thread da interface** ✓.
+
+```java
+if (Looper.myLooper() != Looper.getMainLooper()) {
+    handler.post(() -> setNetwork(type));
+    return;
+}
+```
+
+Testado ✗: reiniciar a box ✗ com o Wi-Fi conectando **depois** da tela ✓ (10:23:40 a tela ✓, 10:23:41 a
+rede ✓) — **nenhum crash** ✓ e a tela inicial **sobe sozinha** ✓.
+
+> Vale para **qualquer TV Android 7** ✗ (e para as de Android 8+ ✗ também ✗, se o callback chegar na
+> thread errada ✗). No upstream o app não sofre disso ✗ porque o `minSdk` é 26 ✓ e a sobrecarga com
+> `Handler` ✓ é sempre usada ✓.
+
+## O que mudou no app (12 arquivos, sem commit)
+
+| Arquivo | Mudança | Motivo |
+|---|---|---|
+| `build.sh` | flag `--min-sdk=N` (padrão 26) | compilar para Android 7 sem baixar o piso do projeto |
+| `Ui.java` | `Ui.join()`; `Typeface.Builder` isolado em classe aninhada | `String.join` e `Typeface.Builder` são API 26/28 |
+| `HomeMode.java` | `Ui.join()`; `androidTv()` reconhece `com.android.tv.settings` | box sem `leanback` era tomada como celular |
+| `Recs.java` | `Ui.join()` | `String.join` é API 26 |
+| `KeyPage.java` | `android.util.Base64` | `java.util.Base64` é API 26 |
+| `Secrets.java` | leitura por stream | `java.nio.file` é API 26 |
+| `SleepOverlay.java` | canal de notificação isolado; `startService` no 7; `TYPE_SYSTEM_ALERT` | API 26 |
+| `HomeApps.java` | `AdaptiveIconDrawable` isolado | API 26 |
+| `Backdrop.java` | `Bitmap.Config.HARDWARE` isolado | API 26 |
+| `HomeView.java` | `registerDefaultNetworkCallback` sem handler no 7; o ícone de rede volta para a thread da interface | a sobrecarga com handler é API 26, e no 7 o aviso chega na thread do sistema ✗ |
+| `WatchNext.java` | Continue Watching vazio no 7 | `TvContract` é API 26 |
+| `ScreenBlur.java` | sem desfocar no 7 | `PixelCopy` de janela é API 26 |
+
+O padrão do projeto (isolar a API nova numa classe aninhada, como `Recording.Node` e `Ui.Weighted`)
+foi mantido: as classes antigas ainda verificam no Android 7.
+
+### Reverter
+
+```bash
+git checkout -- app/src build.sh
+```
+
+Volta o projeto ao estado original (Android 8+). O APK desta box continua instalado nela, mas uma
+recompilação normal já não atualiza: assinatura e `minSdk` diferentes.
+
+## O que não funciona (e está previsto)
+
+| Recurso | Por quê |
+|---|---|
+| Vidro com AGSL (céu, reflexo) | AGSL é Android 13+; a box usa o gradiente plano (*"shader unavailable, using gradient"* no log) |
+| Fundo desfocado (vidro da tela) | `PixelCopy` de janela é API 26; a box usa o véu escuro |
+| Continue Watching | `TvContract` é API 26; a lista fica vazia |
+| Fontes variáveis (Inter com peso) | `Typeface.Builder` é API 28; a box usa a fonte do sistema |
+| "Latest apps" com `ps -A -o NAME` | funciona, mas `pm list packages -d` e afins são do Android 7 |
+
+## Checklist
+
+```bash
+adb connect 192.168.0.232:5555
+adb shell "cmd package query-activities --brief --user 0 -a android.intent.action.MAIN -c android.intent.category.HOME"
+# deve listar io.freemytv/.HomeActivity
+adb shell settings get secure screensaver_components    # io.freemytv/io.freemytv.Screensaver
+adb shell "dumpsys package com.oranth.launcher | grep enabled="   # enabled=0 (desligado, não removido)
+adb shell input keyevent 3      # Home: tem de abrir o Free My TV
+```
+
+![A tela inicial do Free My TV na TX9](tx9-home.png)
+
+## Ideias para o futuro
+
+Espaço para as melhorias que você quer fazer no projeto a partir daqui — anote aqui ou me conte
+na conversa e eu implemento.
+
+### 1. Escolher a imagem de fundo (tela inicial e tela de descanso) — **feito**
+
+*Home Settings* → **Wallpaper** (*Papel de parede*) e **Screensaver photo** (*Foto da tela de
+descanso*): o OK abre as fotos (a que está em foco aparece grande, ao lado da lista) e as setas
+passam por elas uma a uma. *Automático* volta ao comportamento de antes.
+
+O que mudou no app:
+
+| Onde | O quê |
+|---|---|
+| `Prefs` | `wallpaper()` e `saverPhoto()` (o nome do arquivo; vazio = automático) |
+| `Photos` | `chosen()` (o arquivo escolhido), `chosenPick()` (a foto sozinha na tela de descanso) e `backdrop()` que passa a devolver a escolhida antes da da hora |
+| `HomeView` | `backgroundFor()`: a foto escolhida ganha dos destaques (e o fundo não segue mais o card em foco) |
+| `DreamView` | `photos()`: a foto escolhida, sozinha, com o zoom lento de sempre |
+| `SettingsActivity` | As duas linhas novas, o seletor (com a prévia grande, lida em segundo plano) e a renumeração das linhas |
+
+Traduções: "Wallpaper" e "Screensaver photo" nos 26 catálogos, à mão.
+
+**A primeira foto na TX9**: `tools/photos.py` enviou três fotos de teste; para ver a sua,
+envie as suas (`python3 tools/photos.py 192.168.0.232 foto.jpg`) e escolha na TV.
+
+### 2. (a seguir)
+
+-

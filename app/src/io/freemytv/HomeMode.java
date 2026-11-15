@@ -81,7 +81,21 @@ final class HomeMode {
         if (pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK) || pm.hasSystemFeature(PackageManager.FEATURE_TELEVISION)) return false;
         UiModeManager mode = c.getSystemService(UiModeManager.class);
         if (mode != null && mode.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) return false;
+        if (androidTv(pm)) return false;
         return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+    }
+
+    /**
+     * Android TV's settings app: a TV has it, a phone doesn't. Some Android TV boxes (Amlogic ones, on Android 7)
+     * don't declare the leanback feature and declare telephony instead, so this is what tells them apart.
+     */
+    private static boolean androidTv(PackageManager pm) {
+        try {
+            pm.getPackageInfo("com.android.tv.settings", 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     /** What the settings and the refused switch say on a phone. */
@@ -144,6 +158,12 @@ final class HomeMode {
         // HY300 projectors (Amlogic txhd2, Android 13): JmLauncher opens it from the Home button (JM_HOME); off only
         // once JM_HOME is ours
         HTC_HOME,                                                                     // the stock home (and an ad SDK)
+        // Amlogic (DroidLogic) boxes, as the TX9: the factory test, the screen mirroring app, the LED's status
+        // notification and the logs app
+        "com.cskj.factorytest",                                                          // factory test (demo)
+        "com.droidlogic.miracast",                                                       // screen mirroring app
+        "com.oranth.ledstatus",                                                         // the LED's status notification
+        "com.droidlogic.readlog",                                                       // the logs app
     };
 
     /** The voice assistant, only with disable_assistant=true in config.properties (the mic button stops working). */
@@ -214,6 +234,12 @@ final class HomeMode {
         "com.onn.bluetoothconnect", "com.onn.btpairoverlay", "com.onn.updatenotification", "com.gretzky.GlobalKey",
         "com.gretzky.hwinfo", "com.droidlogic", "com.droidlogic.tv.settings", "com.droidlogic.mictoggle",
         "com.droidlogic.launcher.provider", "com.droidlogic.android.tv.connecteddevices",
+        // Amlogic (DroidLogic) boxes, as the TX9 (Android 7.1.2): the tuner, the network, the remote, the updates, the
+        // media player, the box's settings and the installer that brings an APK in
+        "com.droidlogic.dig", "com.droidlogic.PPPoE", "com.droidlogic.inputmethod.remote",
+        "com.droidlogic.BluetoothRemote", "com.droidlogic.otaupgrade", "com.oranth.update",
+        "com.droidlogic.mediacenter", "com.droidlogic.SubTitleService", "com.droidlogic.appinstall",
+        "com.mbox.settings",
         // Sony BRAVIA (MediaTek, Android TV 10): inputs and tuner, TV API and live TV, system and vendor services
         // (the remote's keys), settings, Bravia Sync (HDMI-CEC), picture and sound, updates, IP control, AirPlay and
         // HomeKit with the Vewd core (persistent: AirPlay crash-loops without it, CleanYourTV's UR3 list)
@@ -288,7 +314,7 @@ final class HomeMode {
         // the connection's read timeout from running out on a slow TV. A dump that doesn't name the package counts as
         // "couldn't check": after a hang Android turns every dumpsys off ("Service dumps disabled due to hung system
         // process.", #246), and an empty answer must not read as "nothing needed".
-        String out = adb.shell("for p in " + String.join(" ", sorted(pkgs)) + "; do d=\"$(dumpsys package $p)\"; "
+        String out = adb.shell("for p in " + Ui.join(" ", sorted(pkgs)) + "; do d=\"$(dumpsys package $p)\"; "
                 + "if ! printf '%s\\n' \"$d\" | grep -q -F \"Package [$p]\"; then echo \"unknown $p\"; "
                 + "elif printf '%s\\n' \"$d\" | sed -n -r '/requested permissions:/,/(install|runtime) permissions:|User [0-9]+:/p'"
                 + " | grep -q TV_INPUT_HARDWARE || printf '%s\\n' \"$d\" | grep -q -E 'TV_INPUT_BUTTON|CONNECT_INPUT|AddAccessory';"
@@ -296,7 +322,7 @@ final class HomeMode {
         if (!out.contains("checked") || out.contains("unknown ")) return null;
         Matcher m = Pattern.compile("keep ([\\w.]+)").matcher(out);
         while (m.find()) keep.add(m.group(1));
-        if (!keep.isEmpty()) AppLog.w("kept on, the TV's inputs or remote need them: " + String.join(", ", sorted(keep)));
+        if (!keep.isEmpty()) AppLog.w("kept on, the TV's inputs or remote need them: " + Ui.join(", ", sorted(keep)));
         return keep;
     }
 
@@ -396,26 +422,41 @@ final class HomeMode {
      * At power-on "Home screen": some MediaTek TV centers put themselves on top about a second after the home screen
      * comes up at boot ("Please scan channels" where there's no antenna, #396). Gives the screen back to ours, but only
      * while no key has been pressed since our home screen first came up, and only in the first 4 minutes.
+     *
+     * And where the TV starts its own screen and never ours (some Android TV boxes start their launcher instead of the
+     * home screen, and Free My TV turns that launcher off), ours comes up instead: nothing has been touched since the
+     * boot, so the screen is ours to take.
      */
     static void powerOnNow(Context app) {
         Prefs.reload();
         if (!"home".equals(Prefs.powerOn())) return;
         List<String> tvApps = Arrays.asList(HomeApps.LIVE_TV_APPS);
-        for (int i = 0; i < 6 && SystemClock.elapsedRealtime() < 240_000; i++) {
+        for (int i = 0; i < 8 && SystemClock.elapsedRealtime() < 240_000; i++) {
             if (i > 0) SystemClock.sleep(10_000);
             long shown = homeShownAt(app);
-            if (shown == 0) continue;   // our home screen isn't up yet
             synchronized (RUN) {   // never in the middle of a switch or the boot check's changes
                 JSONObject s = state(app);
                 if (!FREE.equals(s.optString("mode")) || s.optBoolean("homeReverted")) return;
                 try (Adb adb = Adb.connect(app, 10_000, null)) {
-                    if (lastUserActivity(adb) >= shown) return;   // a key since: what's in front is their choice
-                    String front = resumedPackage(adb);
-                    if (front != null && tvApps.contains(front)) {
-                        adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
-                        AppLog.w("at power-on: " + front + " took the screen before any key, back to the home screen");
+                    if (shown > 0) {
+                        // Our home screen came up: only a TV app taking the screen over it is ours to correct.
+                        if (lastUserActivity(adb) >= shown) return;   // a key since: their choice
+                        String front = resumedPackage(adb);
+                        if (front != null && tvApps.contains(front)) {
+                            adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
+                            AppLog.w("at power-on: " + front + " took the screen before any key, back to the home screen");
+                        }
                         return;
                     }
+                    // It never came up: the TV started its own (which Free My TV turns off). Nothing has been touched for
+                    // a while (some boxes count their own starting up as the user being there), so ours takes the
+                    // screen; the TV may start over it, and the next round brings it back.
+                    if (lastUserActivity(adb) > SystemClock.uptimeMillis() - 15_000) continue;   // touched: wait
+                    String front = resumedPackage(adb);
+                    if (front == null) continue;   // unreadable: what can't be read counts as a key, nothing moves
+                    if (PKG.equals(front)) continue;   // ours is up: wait, the TV may start over it
+                    adb.shell("am start -a android.intent.action.MAIN -c android.intent.category.HOME");
+                    AppLog.w("at power-on: our home screen wasn't up (" + front + "), bringing it up");
                 } catch (IOException e) {
                     AppLog.w("at power-on: " + e.getMessage());
                 }
@@ -476,7 +517,7 @@ final class HomeMode {
             list.add(REMOTE_SERVICE);
         }
         adb.shell(list.isEmpty() ? "settings delete secure enabled_accessibility_services"
-                : "settings put secure enabled_accessibility_services '" + String.join(":", list) + "'");
+                : "settings put secure enabled_accessibility_services '" + Ui.join(":", list) + "'");
         if (on) adb.shell("settings put secure accessibility_enabled 1");
         else if (list.isEmpty() && state(c).optBoolean("accessibilityWasOff")) adb.shell("settings put secure accessibility_enabled 0");
         AppLog.w("remote buttons service " + (on ? "on" : "off"));
@@ -692,6 +733,50 @@ final class HomeMode {
         }
     }
 
+    /**
+     * The app stores this app knows: the one the TV came with, Amazon's, Aurora Store and F-Droid (the two that need
+     * no Google account). Home Settings > App Store picks the one in use and turns the others off.
+     */
+    static final String[] STORES = {"com.android.vending", "com.amazon.venezia", "com.aurora.store", "org.fdroid.fdroid"};
+
+    /**
+     * The store the "App Store" button opens: the chosen one is on, the others off (still installed, back with a
+     * button). The one turned off goes on the state's list, so "Original" brings it back.
+     */
+    static void storeNow(Context c, String pkg) {
+        if (pkg.isEmpty()) return;
+        Prefs.setStore(pkg);
+        try (Adb adb = connect(c, state(c))) {
+            Set<String> disabled = new HashSet<>(stringList(state(c), "disabled"));
+            for (String other : STORES) {
+                if (other.equals(pkg)) {
+                    if (adb.shell("pm enable " + other).contains("new state: enabled")) disabled.remove(other);
+                } else if (adb.shell("pm disable-user --user 0 " + other).contains("disabled-user")) {
+                    disabled.add(other);
+                }
+            }
+            JSONObject s = state(c);
+            s.put("disabled", new JSONArray(sorted(disabled)));
+            save(c, s);
+            AppLog.w("app store: " + pkg);
+        } catch (IOException | JSONException e) {
+            AppLog.w("app store: " + e.getMessage());
+            notice(c, Ui.trf("Couldn't change the app store: {error}", "error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Shuts the TV down or restarts it, through the TV's own ADB: the shut down is the power key (what a short press
+     * on the remote does, without holding it down) and the restart is the TV's own command.
+     */
+    static void powerNow(Context c, String what) {
+        try (Adb adb = connect(c, state(c))) {
+            adb.shell("reboot".equals(what) ? "reboot" : "input keyevent 26");
+        } catch (IOException e) {
+            AppLog.w("power: " + e.getMessage());
+        }
+    }
+
     static String bricksText() {
         return Ui.tr("On this TV model, switching the home screen kept a TV from starting. Free My TV stays an app here: open it from your apps.");
     }
@@ -758,7 +843,7 @@ final class HomeMode {
             } else {
                 List<String> problems = new ArrayList<>(failed);
                 if (!homeOk) problems.add(Ui.tr("the original home screen"));
-                notice(c, Ui.trf("Original mode, but I couldn't turn back on: {list}.", "list", String.join(", ", problems)));
+                notice(c, Ui.trf("Original mode, but I couldn't turn back on: {list}.", "list", Ui.join(", ", problems)));
             }
             busy(c, Ui.tr("Measuring the original home screen…"));
             measure(c, adb, ORIGINAL, false);
@@ -998,7 +1083,7 @@ final class HomeMode {
                         }
                     }
                 }
-                if (!back.isEmpty()) notice(app, Ui.trf("Turned back on {list}: the TV's inputs or remote need it.", "list", String.join(", ", back)));
+                if (!back.isEmpty()) notice(app, Ui.trf("Turned back on {list}: the TV's inputs or remote need it.", "list", Ui.join(", ", back)));
                 // JmLauncher: the HTC home screen goes off only while the Home button opens ours.
                 boolean jmOurs = true;
                 if (hasJm(adb)) {
@@ -1062,8 +1147,8 @@ final class HomeMode {
                 return;
             }
             if (!fixed.isEmpty()) {
-                notice(app, updated ? Ui.trf("The TV update turned back on {list}.", "list", String.join(", ", fixed))
-                        : Ui.trf("Turned off what was missing: {list}.", "list", String.join(", ", fixed)));
+                notice(app, updated ? Ui.trf("The TV update turned back on {list}.", "list", Ui.join(", ", fixed))
+                        : Ui.trf("Turned off what was missing: {list}.", "list", Ui.join(", ", fixed)));
             } else if (updated) {
                 notice(app, Ui.tr("The TV was updated; Free My TV is still on."));
             }
@@ -1555,7 +1640,7 @@ final class HomeMode {
         for (String pkg : sorted(disabled)) if (pkg.matches("[\\w.]+")) list.add(pkg);
         try {
             adb.shell(list.isEmpty() ? "settings delete global " + RECORD
-                    : "settings put global " + RECORD + " " + String.join(",", list));
+                    : "settings put global " + RECORD + " " + Ui.join(",", list));
         } catch (IOException e) {
             AppLog.w("could not save the record of what we turned off: " + e.getMessage());
         }

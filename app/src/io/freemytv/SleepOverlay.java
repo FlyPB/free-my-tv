@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -63,7 +64,8 @@ public class SleepOverlay extends Service {
                 .putExtra("language", Prefs.language());
         boolean wanted = Prefs.sleepShown() && SleepTimer.minutesLeft(c) > 0;
         if (wanted && Settings.canDrawOverlays(c)) {
-            c.startForegroundService(i);
+            if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
+            else c.startService(i);   // Android 7: no foreground service of its own
         } else {
             c.stopService(i);
             if (wanted && Capabilities.overlay(c)) allow(c.getApplicationContext());
@@ -114,10 +116,7 @@ public class SleepOverlay extends Service {
     @Override public void onCreate() {
         super.onCreate();
         // In the foreground first: a quick stop right after the start must not find it still in the background.
-        NotificationManager nm = getSystemService(NotificationManager.class);
-        nm.createNotificationChannel(new NotificationChannel("sleep", Ui.tr("Sleep Timer"), NotificationManager.IMPORTANCE_MIN));
-        startForeground(1, new Notification.Builder(this, "sleep").setSmallIcon(R.drawable.icon)
-                .setContentTitle(Ui.tr("Sleep Timer")).build());
+        startForeground(1, notification());
         Ui.init(this);   // its own process: the app's font isn't loaded here yet
         SleepTimer.listen(this);
         float k = getResources().getDisplayMetrics().widthPixels / 1920f;
@@ -141,8 +140,22 @@ public class SleepOverlay extends Service {
         getSystemService(WindowManager.class).addView(view, layout);
     }
 
-    /** Every update (a new time, Position, Theme, Language): drawn again now. */
-    @Override public int onStartCommand(Intent intent, int flags, int startId) {
+    /** The foreground notification: a channel on Android 8+, the older builder before it. */
+    private Notification notification() {
+        if (Build.VERSION.SDK_INT >= 26) return Channel.build(this);
+        return new Notification.Builder(this).setSmallIcon(R.drawable.icon).setContentTitle(Ui.tr("Sleep Timer")).build();
+    }
+
+    /** The notification channel is Android 8+: only this class touches it, so SleepOverlay still verifies on Android 7. */
+    private static final class Channel {
+        static Notification build(Context c) {
+            NotificationManager nm = c.getSystemService(NotificationManager.class);
+            nm.createNotificationChannel(new NotificationChannel("sleep", Ui.tr("Sleep Timer"), NotificationManager.IMPORTANCE_MIN));
+            return new Notification.Builder(c, "sleep").setSmallIcon(R.drawable.icon).setContentTitle(Ui.tr("Sleep Timer")).build();
+        }
+    }
+
+    /** Every update (a new time, Position, Theme, Language): drawn again now. */    @Override public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) {
             stopSelf();
             return START_NOT_STICKY;

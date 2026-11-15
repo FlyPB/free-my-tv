@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>TV Box Launcher - Branco Gelo Neon</title>
+<!-- Tailwind CSS CDN com plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter & Outfit para estética de TV 10-foot UI -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<!-- Phosphor Icons para ícones nítidos de Smart TV -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/thin/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/light/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+<!-- Tailwind Custom Config -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            tv: {
+              dark: '#0f172a',
+              card: 'rgba(255, 255, 255, 0.65)',
+              focus: '#ffffff',
+              border: 'rgba(255, 255, 255, 0.85)',
+            }
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 35px -5px rgba(6, 182, 212, 0.35)',
+            'glow-focus': '0 15px 45px -10px rgba(255, 255, 255, 0.95), 0 0 30px rgba(186, 230, 253, 0.6)',
+            'glass-dock': '0 25px 50px rgba(148, 163, 184, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.9)',
+          },
+          animation: {
+            'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles: Efeitos de Profundidade e Glassmorphism Ice White Neon -->
+<style data-purpose="custom-glass-effects">
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(240, 246, 255, 0.45) 100%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 8px 24px -6px rgba(148, 163, 184, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    }
+    
+    .glass-shelf {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(235, 243, 252, 0.60) 100%);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 25px 60px -15px rgba(148, 163, 184, 0.35), inset 0 1px 3px rgba(255, 255, 255, 1);
+    }
+
+    .glass-card-inactive {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.75) 0%, rgba(241, 245, 249, 0.45) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 6px 18px rgba(148, 163, 184, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Ambient dynamic glow background - Branco Gelo com nuances neon sutis */
+    .ambient-bg {
+      background-color: #f1f5f9;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.85) 0px, transparent 55%),
+        radial-gradient(at 85% 15%, rgba(243, 232, 255, 0.65) 0px, transparent 50%),
+        radial-gradient(at 50% 90%, rgba(204, 251, 241, 0.55) 0px, transparent 60%),
+        radial-gradient(at 95% 85%, rgba(254, 243, 199, 0.4) 0px, transparent 50%),
+        radial-gradient(circle at 50% 50%, #ffffff 0%, #e8edf5 100%);
+    }
+
+    /* Custom focused element state - Branco Neon Intenso */
+    .tv-focused {
+      transform: scale(1.05);
+      border-color: #ffffff;
+      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: 0 15px 35px -5px rgba(100, 116, 139, 0.3), 0 0 35px rgba(255, 255, 255, 0.95), 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+  </style>
+</head>
+<body class="ambient-bg text-slate-800 font-sans min-h-screen w-screen overflow-hidden flex flex-col justify-between select-none relative p-10 md:p-14 lg:p-16">
+<!-- BEGIN: AmbientBackdropLayers -->
+<!-- Esferas de luz e profundidade cinematográfica em branco neon e gelo -->
+<div class="pointer-events-none absolute inset-0 overflow-hidden" data-purpose="ambient-lighting">
+<div class="absolute -top-32 left-1/4 w-[700px] h-[700px] bg-white rounded-full blur-[110px] opacity-80 animate-pulse-subtle"></div>
+<div class="absolute top-1/4 -right-16 w-[600px] h-[600px] bg-sky-200/50 rounded-full blur-[130px]"></div>
+<div class="absolute -bottom-20 left-1/3 w-[700px] h-[500px] bg-cyan-100/60 rounded-full blur-[140px]"></div>
+</div>
+<!-- END: AmbientBackdropLayers -->
+<!-- BEGIN: TopBar -->
+<header class="relative z-10 flex items-start justify-between w-full" data-purpose="top-navigation-header">
+<!-- Relógio Digital e Data 10-foot UI -->
+<div class="flex flex-col tracking-tight" data-purpose="clock-date-widget">
+<span class="text-xs md:text-sm font-bold tracking-widest uppercase text-slate-500 font-sans pl-1">
+        Domingo, 1 de Novembro
+      </span>
+<h1 class="font-display text-7xl md:text-8xl lg:text-9xl font-extralight tracking-tight text-slate-900 leading-none drop-shadow-sm mt-1">
+        19:05
+      </h1>
+</div>
+<!-- Status da TV & Atalhos Rápidos de Sistema -->
+<div class="flex items-center gap-3.5 pt-2" data-purpose="system-status-indicators">
+<!-- Indicador Wi-Fi -->
+<div class="flex items-center justify-center w-11 h-11 rounded-full glass-panel text-slate-700 hover:text-slate-950 transition-colors shadow-sm" title="Wi-Fi Conectado">
+<i class="ph-bold ph-wifi-high text-xl"></i>
+</div>
+<!-- Indicador Bluetooth -->
+<div class="flex items-center justify-center w-11 h-11 rounded-full glass-panel text-slate-700 hover:text-slate-950 transition-colors shadow-sm" title="Bluetooth Ativo">
+<i class="ph-bold ph-bluetooth text-xl"></i>
+</div>
+<!-- Notificações -->
+<div class="relative flex items-center justify-center w-11 h-11 rounded-full glass-panel text-slate-700 hover:text-slate-950 transition-colors cursor-pointer shadow-sm" title="Notificações">
+<i class="ph-bold ph-bell text-xl"></i>
+<span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-[0_0_10px_#06b6d4]"></span>
+</div>
+<!-- Perfil / Usuário Atual -->
+<div class="flex items-center justify-center w-11 h-11 rounded-full glass-panel bg-gradient-to-tr from-cyan-100 to-indigo-100 text-slate-800 border-white hover:scale-105 transition-all cursor-pointer ml-1 shadow-sm" title="Perfil do Usuário">
+<i class="ph-fill ph-user text-xl text-cyan-700"></i>
+</div>
+<!-- Configurações Rápidas -->
+<button class="flex items-center justify-center w-11 h-11 rounded-full glass-panel text-slate-700 hover:text-slate-950 hover:border-white transition-all cursor-pointer shadow-sm" title="Configurações do Sistema" type="button">
+<i class="ph-bold ph-gear text-xl"></i>
+</button>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContentAndDocks -->
+<main class="relative z-10 flex flex-col justify-end w-full space-y-7 pb-2" data-purpose="tv-launcher-main-dock">
+<!-- Shelf Principal de Aplicativos (Apps Dock Flutuante) -->
+<section aria-label="Aplicativos em Destaque" class="w-full">
+<div class="glass-shelf rounded-3xl p-3 md:p-4.5 lg:p-5 flex items-center gap-3.5 md:gap-5 overflow-x-auto no-scrollbar shadow-2xl">
+<!-- App 1: YouTube (Foco Ativo Padrão) -->
+<div class="group relative flex-shrink-0 cursor-pointer" data-purpose="app-card-youtube" tabindex="0">
+<div class="tv-focused w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all duration-300 border-2 border-white ring-2 ring-sky-300/40" style="box-shadow: rgb(255, 255, 255) 0px 0px 0px 2px, rgba(6, 182, 212, 0.8) 0px 0px 0px 3px, rgba(6, 182, 212, 0.35) 0px 8px 20px -4px; border-color: rgb(255, 255, 255); background: linear-gradient(145deg, rgb(255, 255, 255) 0%, rgb(240, 253, 250) 100%);">
+<!-- Brilho interno do app focado neon branco -->
+<div class="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-red-600 rounded-2xl shadow-lg shadow-red-500/30 text-white mb-2">
+<i class="ph-fill ph-youtube-logo text-3xl"></i>
+</div>
+<span class="text-xs md:text-sm font-semibold tracking-wide text-slate-900">YouTube</span>
+</div>
+<!-- Luz sutil abaixo do item em foco (Neon Branco Gelo) -->
+<div class="w-2/3 h-1.5 bg-cyan-400 mx-auto rounded-full blur-[2px] mt-1.5 opacity-90 shadow-[0_0_12px_#38bdf8]" style="box-shadow: rgba(6, 182, 212, 0.5) 0px 2px 10px 1px; opacity: 0.9;"></div>
+</div>
+<!-- App 2: Netflix -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-netflix" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-white rounded-2xl border border-red-500/30 text-red-600 shadow-md mb-2 font-display font-extrabold text-2xl tracking-tighter">
+              N
+            </div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">Netflix</span>
+</div>
+</div>
+<!-- App 3: Google Play Store -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-playstore" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-gradient-to-tr from-white to-sky-50 border border-sky-200 rounded-2xl text-cyan-600 shadow-md mb-2">
+<i class="ph-fill ph-google-play-logo text-3xl text-cyan-600"></i>
+</div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">Play Store</span>
+</div>
+</div>
+<!-- App 4: Google Chrome -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-chrome" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-white rounded-2xl border border-amber-400/40 text-amber-500 shadow-md mb-2">
+<i class="ph-fill ph-google-chrome-logo text-3xl"></i>
+</div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">Chrome</span>
+</div>
+</div>
+<!-- App 5: Configurações do Sistema -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-settings" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-teal-50 border border-teal-400/40 rounded-2xl text-teal-600 shadow-md mb-2">
+<i class="ph-fill ph-gear-six text-3xl"></i>
+</div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">Ajustes</span>
+</div>
+</div>
+<!-- App 6: AirScreen / Espelhamento -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-airscreen" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-emerald-50 border border-emerald-400/40 rounded-2xl text-emerald-600 shadow-md mb-2">
+<i class="ph-bold ph-screencast text-3xl"></i>
+</div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">AirScreen</span>
+</div>
+</div>
+<!-- App 7: Galeria de Mídia / Fotos -->
+<div class="group relative flex-shrink-0 cursor-pointer hover:scale-105 transition-all duration-300" data-purpose="app-card-gallery" tabindex="0">
+<div class="glass-card-inactive hover:border-white w-32 md:w-36 lg:w-40 h-24 md:h-28 lg:h-32 rounded-2xl flex flex-col items-center justify-center p-3 relative overflow-hidden transition-all">
+<div class="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-fuchsia-50 border border-fuchsia-400/40 rounded-2xl text-fuchsia-600 shadow-md mb-2">
+<i class="ph-fill ph-images-square text-3xl"></i>
+</div>
+<span class="text-xs md:text-sm font-medium tracking-wide text-slate-700 group-hover:text-slate-950">Galeria</span>
+</div>
+</div>
+</div>
+</section>
+<!-- BEGIN: ShortcutsSection -->
+<!-- Sub-barra de Atalhos Rápidos (Atalhos do Sistema) -->
+<section aria-label="Atalhos Rápidos de Sistema" class="flex flex-col gap-2.5">
+<span class="text-xs font-bold tracking-wider uppercase text-slate-500 pl-1 font-sans">
+        Atalhos
+      </span>
+<div class="flex items-center gap-3.5">
+<!-- Atalho: Todos os Apps -->
+<button class="group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl glass-panel hover:bg-white hover:border-white transition-all cursor-pointer" data-purpose="shortcut-all-apps" type="button">
+<div class="w-8 h-8 rounded-xl bg-cyan-100 flex items-center justify-center text-cyan-700 group-hover:bg-cyan-500 group-hover:text-white transition-colors">
+<i class="ph-bold ph-squares-four text-lg"></i>
+</div>
+<span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950">Todos os Apps</span>
+</button>
+<!-- Atalho: Ajustes do Início -->
+<button class="group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl glass-panel hover:bg-white hover:border-white transition-all cursor-pointer" data-purpose="shortcut-home-settings" type="button">
+<div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+<i class="ph-bold ph-sliders text-lg"></i>
+</div>
+<span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950">Ajustes do Início</span>
+</button>
+<!-- Atalho: Ajustes da TV -->
+<button class="group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl glass-panel hover:bg-white hover:border-white transition-all cursor-pointer" data-purpose="shortcut-tv-settings" type="button">
+<div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+<i class="ph-bold ph-television-simple text-lg"></i>
+</div>
+<span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950">Ajustes da TV</span>
+</button>
+<!-- Atalho Extra: Entradas HDMI -->
+<button class="group flex items-center gap-3.5 px-5 py-3.5 rounded-2xl glass-panel hover:bg-white hover:border-white transition-all cursor-pointer" data-purpose="shortcut-inputs" type="button">
+<div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+<i class="ph-bold ph-plugs-connected text-lg"></i>
+</div>
+<span class="text-sm font-semibold text-slate-700 group-hover:text-slate-950">Entradas</span>
+</button>
+</div>
+</section>
+<!-- END: ShortcutsSection -->
+</main>
+<!-- END: MainContentAndDocks -->
+<!-- BEGIN: RemoteControlSimulationScript -->
+<!-- Script para simular interatividade suave do foco do controle remoto (D-Pad) -->
+<script data-purpose="tv-dpad-navigation">
+    document.addEventListener('DOMContentLoaded', () => {
+      const focusableElements = Array.from(document.querySelectorAll('[tabindex="0"], button'));
+      let currentFocusIndex = 0;
+
+      // Suporte para teclas de seta do controle remoto / teclado
+      window.addEventListener('keydown', (e) => {
+        if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+          e.preventDefault();
+          if (e.key === 'ArrowRight') {
+            currentFocusIndex = (currentFocusIndex + 1) % focusableElements.length;
+          } else if (e.key === 'ArrowLeft') {
+            currentFocusIndex = (currentFocusIndex - 1 + focusableElements.length) % focusableElements.length;
+          }
+          focusableElements[currentFocusIndex].focus();
+        }
+      });
+    });
+  </script>
+<!-- END: RemoteControlSimulationScript -->
+
+
+</body></html>

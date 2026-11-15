@@ -57,6 +57,8 @@ final class HomeApps {
     private HomeApps() {}
 
     static final int APP = 0, LIVE_TV = 1, INPUT = 2, ALL_APPS = 3, SETTINGS = 4, ANDROID_SETTINGS = 5, DEVICE = 6;
+    /** The power button: shuts the TV down or restarts it, each with a confirmation. */
+    static final int POWER = 10;
     /** The "HDMI Inputs" button: opens the bottom drawer on the inputs (the home screen handles it). */
     static final int INPUTS = 7;
     /** The Recent Apps switcher (the home screen opens it). */
@@ -261,10 +263,12 @@ final class HomeApps {
 
     // MARK: - Top buttons (the round ones at the top right)
 
-    static final String TOP_LIVE = "live", TOP_INPUTS = "inputs", TOP_SETTINGS = "settings", TOP_RECENTS = "recents", TOP_STORE = "store";
+    static final String TOP_LIVE = "live", TOP_INPUTS = "inputs", TOP_SETTINGS = "settings", TOP_RECENTS = "recents", TOP_STORE = "store",
+            TOP_POWER = "power";
     static final List<String> TOP_DEFAULT = Collections.unmodifiableList(java.util.Arrays.asList(TOP_LIVE, TOP_INPUTS, TOP_SETTINGS));
-    /** What can be a top button: the default three, and Recent Apps and App Store for whoever adds them. */
-    static final List<String> TOP_ALL = Collections.unmodifiableList(java.util.Arrays.asList(TOP_LIVE, TOP_INPUTS, TOP_SETTINGS, TOP_RECENTS, TOP_STORE));
+    /** What can be a top button: the default three, and Recent Apps, App Store and Power for whoever adds them. */
+    static final List<String> TOP_ALL = Collections.unmodifiableList(java.util.Arrays.asList(TOP_LIVE, TOP_INPUTS, TOP_SETTINGS,
+            TOP_RECENTS, TOP_STORE, TOP_POWER));
     static final int MAX_TOP = TOP_ALL.size();
 
     /** The keys of the top buttons, in order (Settings > Top Buttons; by default Live TV, HDMI Inputs, Settings). */
@@ -310,6 +314,8 @@ final class HomeApps {
     /** Only native stores with a launcher entry; no browser fallback or package installation. */
     static String storePackage(Context c) {
         PackageManager pm = c.getPackageManager();
+        String chosen = Prefs.store();   // the one picked in Home Settings > App Store
+        if (!chosen.isEmpty() && launchIntent(pm, chosen) != null) return chosen;
         String first = HomeMode.AMAZON ? "com.amazon.venezia" : "com.android.vending";
         String second = HomeMode.AMAZON ? "com.android.vending" : "com.amazon.venezia";
         if (launchIntent(pm, first) != null) return first;
@@ -322,6 +328,7 @@ final class HomeApps {
             case TOP_INPUTS: return action(INPUTS, TOP_INPUTS, Ui.tr("HDMI Inputs"), "hdmi");
             case TOP_RECENTS: return action(RECENTS, TOP_RECENTS, Ui.tr("Recent Apps"), "recents");
             case TOP_STORE: return action(APP, TOP_STORE, Ui.tr("App Store"), "store");
+            case TOP_POWER: return action(POWER, TOP_POWER, Ui.tr("Power"), "power");
             default: return action(SETTINGS, TOP_SETTINGS, Ui.tr("light|Settings"), "settings");
         }
     }
@@ -657,6 +664,31 @@ final class HomeApps {
         return it;
     }
 
+    /**
+     * The power button: shut the TV down or restart it, each with a confirmation. The shut down is the power key (what
+     * a short press on the remote does, without holding it down); the restart is the TV's own command.
+     */
+    private static void powerMenu(Context a) {
+        if (!(a instanceof Activity)) return;
+        Activity act = (Activity) a;
+        new android.app.AlertDialog.Builder(act, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(Ui.tr("Power"))
+                .setItems(new String[] {Ui.tr("Shut down"), Ui.tr("Restart")},
+                        (d, which) -> confirmPower(act, which == 0 ? "off" : "reboot"))
+                .setNegativeButton(Ui.tr("Cancel"), null)
+                .show();
+    }
+
+    /** The confirmation before the TV goes down or restarts. */
+    private static void confirmPower(Activity a, String what) {
+        new android.app.AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(Ui.tr("Power"))
+                .setMessage("off".equals(what) ? Ui.tr("Shut the TV down now?") : Ui.tr("Restart the TV now?"))
+                .setPositiveButton(Ui.tr("Yes"), (d, w) -> ModeJob.schedulePower(a, what))
+                .setNegativeButton(Ui.tr("Cancel"), null)
+                .show();
+    }
+
     /** Opens the item with the system zoom transition growing out of the card (the app starts opening right away). */
     static boolean open(Activity a, Item it, View from, int x, int y, int w, int h) {
         return open(a, it, ActivityOptions.makeScaleUpAnimation(from, x, y, Math.max(w, 1), Math.max(h, 1)).toBundle());
@@ -700,6 +732,9 @@ final class HomeApps {
                 // A fresh task: else Back walks through whatever the maker's settings app had open before
                 intent = new Intent(it.intent).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
+            case POWER:
+                powerMenu(a);
+                return true;
             default:
                 return false;
         }
@@ -1253,7 +1288,7 @@ final class HomeApps {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
         if (icon == null) return darkTile(TILE_W, TILE_H);
-        boolean adaptive = icon instanceof AdaptiveIconDrawable;
+        boolean adaptive = Build.VERSION.SDK_INT >= 26 && Adaptive.is(icon);
         // Drawn at the icon's own resolution (the whole tile, so the squircle's edge is smooth too), then filtered down.
         float drawn = TILE_H * (adaptive ? 0.56f * 1.5f : 0.46f);
         float k = detail(icon, drawn, drawn);
@@ -1265,11 +1300,10 @@ final class HomeApps {
         if (adaptive) {
             // Adaptive icon: the layers in a squircle, like an Apple icon. Drawn apart, then filling an anti-aliased
             // rounded rectangle (clipPath leaves stair-stepped corners).
-            AdaptiveIconDrawable a = (AdaptiveIconDrawable) icon;
             Bitmap layers = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas lc = new Canvas(layers);
             int pad = size / 4;
-            for (Drawable layer : new Drawable[] {a.getBackground(), a.getForeground()}) {
+            for (Drawable layer : Adaptive.layers(icon)) {
                 if (layer == null) continue;
                 layer.setBounds(-pad, -pad, size + pad, size + pad);
                 layer.draw(lc);
@@ -1294,8 +1328,7 @@ final class HomeApps {
     /**
      * How much bigger than w × h to draw d so it's near its own resolution (vectors: 2×), at most 2×: after an update
      * every tile is made again, some on the UI thread.
-     */
-    private static float detail(Drawable d, float w, float h) {
+     */    private static float detail(Drawable d, float w, float h) {
         int iw = d.getIntrinsicWidth(), ih = d.getIntrinsicHeight();
         float k = iw > 0 && ih > 0 ? Math.max(iw / w, ih / h) : 2f;
         return Math.max(1f, Math.min(2f, k));
@@ -1306,6 +1339,16 @@ final class HomeApps {
         Bitmap out = Ui.downscale(big, w, h);
         if (out != big) big.recycle();
         return out;
+    }
+
+    /** The adaptive icon (Android 8+): only this class touches it, so HomeApps still verifies on Android 7. */
+    private static final class Adaptive {
+        static boolean is(Drawable icon) { return icon instanceof AdaptiveIconDrawable; }
+
+        static Drawable[] layers(Drawable icon) {
+            AdaptiveIconDrawable a = (AdaptiveIconDrawable) icon;
+            return new Drawable[] {a.getBackground(), a.getForeground()};
+        }
     }
 
     /** Settings and the like: the icon in white on a dark card. */

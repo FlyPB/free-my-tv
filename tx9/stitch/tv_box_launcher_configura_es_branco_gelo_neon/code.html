@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Free My TV - Ajustes do Início</title>
+<!-- Tailwind CSS CDN com Plugins de Formulários e Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            glass: {
+              card: 'rgba(255, 255, 255, 0.04)',
+              border: 'rgba(255, 255, 255, 0.10)',
+              glow: 'rgba(255, 255, 255, 0.06)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-glassmorphism">
+    /* Efeitos de backdrop e glassmorphism avançados */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    
+    .glass-highlight {
+      background: rgba(255, 255, 255, 0.94);
+      color: #0b0c10;
+      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Ambient background lights */
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body class="ambient-bg text-slate-800 min-h-screen flex items-center justify-center p-0 m-0 overflow-hidden font-sans antialiased select-none relative">
+<!-- BEGIN: AmbientBackground -->
+<!-- Luzes de fundo atmosféricas para dar profundidade ao tema escuro -->
+<div class="absolute -top-32 left-1/4 w-[700px] h-[700px] bg-white rounded-full blur-[110px] opacity-80 pointer-events-none"></div>
+<div class="absolute -bottom-20 right-1/4 w-[600px] h-[600px] bg-sky-200/50 rounded-full blur-[130px] pointer-events-none"></div>
+<!-- END: AmbientBackground -->
+<!-- BEGIN: TVScreenContainer -->
+<!-- Container principal proporção 16:9 de TV Box com layout panorâmico -->
+<main class="relative z-10 w-full max-w-[1280px] h-[720px] mx-auto flex overflow-hidden p-10 gap-10" data-purpose="tv-screen-frame">
+<!-- BEGIN: LeftInfoPanel -->
+<!-- Painel esquerdo: Apresentação da marca 'Free My TV' e métricas de desempenho do sistema -->
+<section class="w-5/12 h-full flex flex-col justify-between py-6" data-purpose="brand-system-overview"><!-- Seção do Logo e Identidade Visual -->
+<div class="flex flex-col items-center justify-center text-center mt-6">
+<!-- Ícone estilizado de 4 pontas / estrelas reluzentes em tom grafite moderno com reflexos neon -->
+<div class="relative mb-6 flex items-center justify-center">
+<svg class="w-20 h-20 text-slate-800 fill-current filter drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]" viewbox="0 0 24 24">
+<!-- Estrela principal -->
+<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"></path>
+</svg>
+<svg class="w-8 h-8 text-cyan-600 fill-current absolute top-0 -right-6 filter drop-shadow-[0_2px_8px_rgba(6,182,212,0.4)]" viewbox="0 0 24 24">
+<!-- Estrela menor superior -->
+<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"></path>
+</svg>
+<svg class="w-6 h-6 text-slate-500 fill-current absolute -bottom-2 -right-3" viewbox="0 0 24 24">
+<!-- Estrela menor inferior -->
+<path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"></path>
+</svg>
+</div>
+<h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">Free My TV</h1>
+<p class="text-slate-500 text-sm font-medium">Início e tela de descanso da TV</p>
+<span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/70 border border-white text-slate-600 shadow-sm">
+    v1.3 • TV Box OS
+  </span>
+</div>
+<!-- Card Glassmorphism com Estatísticas do Sistema da Box - Branco Gelo Fosco -->
+<div class="glass-panel-light rounded-2xl p-5" data-purpose="system-performance-card">
+<div class="text-[11px] font-bold tracking-wider uppercase text-slate-500 mb-3 px-1">
+    Comparação &amp; Desempenho
+  </div>
+<div class="space-y-2.5 text-xs">
+<!-- Tempo de Resposta -->
+<div class="flex items-center justify-between py-1 border-b border-slate-200/60">
+<span class="text-slate-600 font-medium">Resposta do Botão Início</span>
+<div class="flex items-center gap-3">
+<span class="text-slate-400 text-[11px] line-through">240 ms</span>
+<span class="font-bold text-emerald-600 font-mono">107 ms</span>
+</div>
+</div>
+<!-- Memória Livre -->
+<div class="flex items-center justify-between py-1 border-b border-slate-200/60">
+<span class="text-slate-600 font-medium">Memória RAM Livre</span>
+<div class="flex items-center gap-3">
+<span class="text-slate-400 text-[11px]">890 MB</span>
+<span class="font-bold text-slate-900 font-mono">3,13 GB</span>
+</div>
+</div>
+<!-- Consumo do Início -->
+<div class="flex items-center justify-between py-1">
+<span class="text-slate-600 font-medium">Uso do Início</span>
+<span class="font-bold text-slate-900 font-mono">57 MB</span>
+</div>
+</div>
+<!-- Alerta / Status da Conexão -->
+<div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+<span class="flex items-center gap-1.5 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+      Sistema Otimizado
+    </span>
+<span class="font-medium text-slate-500">ADB Conectado</span>
+</div>
+</div></section>
+<!-- END: LeftInfoPanel -->
+<!-- BEGIN: RightSettingsPanel -->
+<!-- Painel direito: Menu interativo estilo TV Settings em vidro fosco -->
+<section class="w-7/12 h-full flex flex-col justify-between py-4 pl-4" data-purpose="settings-menu-list"><!-- Cabeçalho da Seção Ativa -->
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Configurações</span>
+<span class="text-slate-300 text-xs">/</span>
+<span class="text-xs text-cyan-700 font-semibold">Aparência</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 mb-4">Ajustes do Início</h2>
+</div>
+<!-- Lista de Opções Estilo TV com Foco Ativo Branco Gelo Neon -->
+<div class="flex flex-col gap-1.5 overflow-y-auto pr-1">
+<!-- Opção 1 (Item com Foco / Ativo em destaque branco puro com halo neon ciano) -->
+<div class="glass-focus-ice rounded-xl px-5 py-3.5 flex items-center justify-between cursor-pointer transition-all duration-200">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#06b6d4]"></span>
+<span class="font-bold text-sm tracking-tight text-slate-900">Idioma</span>
+</div>
+<div class="flex items-center gap-2 font-semibold text-xs text-slate-700">
+<span>Português</span>
+<svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 2 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer border-b border-slate-200/40">
+<span class="text-sm font-medium group-hover:text-slate-950">Tema</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<span class="font-medium">Escuro Glass</span>
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 3 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer border-b border-slate-200/40">
+<span class="text-sm font-medium group-hover:text-slate-950">Papel de parede</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<span class="font-medium">1 de 5</span>
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 4 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer border-b border-slate-200/40">
+<span class="text-sm font-medium group-hover:text-slate-950">Foto da tela de descanso</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<span class="font-medium">3 fotos</span>
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 5 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer border-b border-slate-200/40">
+<span class="text-sm font-medium group-hover:text-slate-950">Sons de navegação</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<span class="font-medium">Desligado</span>
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 6 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer border-b border-slate-200/40">
+<span class="text-sm font-medium group-hover:text-slate-950">Conteúdo do topo</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<span class="font-medium">Relógio e Clima</span>
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Opção 7 -->
+<div class="group px-5 py-3 rounded-xl flex items-center justify-between text-slate-700 glass-item-hover transition-all cursor-pointer">
+<span class="text-sm font-medium group-hover:text-slate-950">Prateleira de aplicativos &amp; Destaques</span>
+<div class="flex items-center gap-2 text-xs text-slate-500">
+<svg class="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- BEGIN: NavigationFooter -->
+<!-- Rodapé com instruções e contagem de itens em vidro claro translúcido -->
+<footer class="pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs text-slate-500" data-purpose="remote-control-hints">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5">
+<kbd class="px-2.5 py-1 rounded-md bg-white/80 text-slate-800 font-mono text-[10px] font-bold border border-white shadow-sm">OK</kbd>
+<span class="font-medium">Selecionar</span>
+</span>
+<span class="flex items-center gap-1.5">
+<kbd class="px-2.5 py-1 rounded-md bg-white/80 text-slate-800 font-mono text-[10px] font-bold border border-white shadow-sm">◀ ▶</kbd>
+<span class="font-medium">Alterar valor</span>
+</span>
+<span class="flex items-center gap-1.5">
+<kbd class="px-2.5 py-1 rounded-md bg-white/80 text-slate-800 font-mono text-[10px] font-bold border border-white shadow-sm">VOLTAR</kbd>
+<span class="font-medium">Sair</span>
+</span>
+</div>
+<span class="font-mono font-medium text-slate-400">1 / 28</span>
+</footer>
+<!-- END: NavigationFooter --></section>
+<!-- END: RightSettingsPanel -->
+</main>
+<!-- END: TVScreenContainer -->
+</body></html>

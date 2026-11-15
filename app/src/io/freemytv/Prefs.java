@@ -361,6 +361,14 @@ final class Prefs {
 
     static void setLiveButton(String inputId) { put("liveButton", inputId); }
 
+    /**
+     * The app store the "App Store" button opens (its package), or "" for the TV's own. Home Settings > App Store
+     * picks the one in use and turns the others off (HomeMode.storeNow).
+     */
+    static String store() { return sp().getString("store", ""); }
+
+    static void setStore(String pkg) { put("store", pkg); }
+
     // MARK: - Widgets and coins
 
     static boolean weather() { return sp().getBoolean("weather", true); }
@@ -396,6 +404,28 @@ final class Prefs {
 
     static void setPhotoSource(String source, String album, String name) {
         sp().edit().putString("photoSource", source).putString("photoAlbum", album).putString("photoAlbumName", name).apply();
+        version++;
+    }
+
+    /**
+     * The photo chosen as the home screen's background (its file name), or "" for none: then the background is the
+     * focused pick's photo, as before.
+     */
+    static String wallpaper() { return sp().getString("wallpaper", ""); }
+
+    static void setWallpaper(String name) {
+        sp().edit().putString("wallpaper", name).apply();
+        version++;
+    }
+
+    /**
+     * The photo chosen for the screensaver (its file name), or "" for none: then the screensaver shows the photos
+     * in turn, as before.
+     */
+    static String saverPhoto() { return sp().getString("saverPhoto", ""); }
+
+    static void setSaverPhoto(String name) {
+        sp().edit().putString("saverPhoto", name).apply();
         version++;
     }
 
