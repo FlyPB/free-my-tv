@@ -164,6 +164,13 @@ final class HomeMode {
         "com.droidlogic.miracast",                                                       // screen mirroring app
         "com.oranth.ledstatus",                                                         // the LED's status notification
         "com.droidlogic.readlog",                                                       // the logs app
+        // Allwinner (Softwinner) boxes, as the HK1: the video player, the screen mirroring app, the file manager
+        // and the factory tests
+        "com.softwinner.fireplayer",                                                    // the video player
+        "com.softwinner.miracastReceiver",                                              // screen mirroring app
+        "com.softwinner.TvdFileManager",                                                // the file manager
+        "com.rockchip.devicetest",                                                      // factory test (demo)
+        "com.system.dota",                                                              // the "dragon box" test apps
     };
 
     /** The voice assistant, only with disable_assistant=true in config.properties (the mic button stops working). */
@@ -259,6 +266,11 @@ final class HomeMode {
         // HY300 projectors (Hotack, Allwinner H713; Amlogic txhd2): keystone and projection settings, the HDMI player,
         // Miracast receiver
         "com.htc.htcsettings", "com.softwinner.awlivetv", "com.softwinner.miracastReceiver", "com.softwinner.tcorrection",
+        // Allwinner (Softwinner) boxes, as the HK1 (Android 12): the ROM's updates, the settings, the package installer,
+        // the launcher, the autostart that opens it and the themes
+        "com.softwinner.update", "com.softwinner.awmanager", "com.softwinner.provision",
+        "com.allwinnertech.packageoverride", "com.hisight.mslauncher", "tv.autostart",
+        "com.softwinner.theme.icon", "com.softwinner.theme.color", "com.softwinner.timerswitch",
         // Amazon Fire TV: launcher, settings, setup, remote pairing, inputs, live TV, channel scan, OTA updates, Appstore
         // (every com.amazon.* is refused by mayTurnOff too)
         "com.amazon.tv.launcher", "com.amazon.firehomestarter", "com.amazon.tv.settings.v2", "com.amazon.tv.settings.core",
