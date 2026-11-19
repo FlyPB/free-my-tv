@@ -59,6 +59,8 @@ final class HomeApps {
     static final int APP = 0, LIVE_TV = 1, INPUT = 2, ALL_APPS = 3, SETTINGS = 4, ANDROID_SETTINGS = 5, DEVICE = 6;
     /** The power button: shuts the TV down or restarts it, each with a confirmation. */
     static final int POWER = 10;
+    /** The "Free memory" button: puts the apps that are running and not in front to sleep. */
+    static final int FREE_MEMORY = 11;
     /** The "HDMI Inputs" button: opens the bottom drawer on the inputs (the home screen handles it). */
     static final int INPUTS = 7;
     /** The Recent Apps switcher (the home screen opens it). */
@@ -264,11 +266,11 @@ final class HomeApps {
     // MARK: - Top buttons (the round ones at the top right)
 
     static final String TOP_LIVE = "live", TOP_INPUTS = "inputs", TOP_SETTINGS = "settings", TOP_RECENTS = "recents", TOP_STORE = "store",
-            TOP_POWER = "power";
+            TOP_POWER = "power", TOP_MEMORY = "memory";
     static final List<String> TOP_DEFAULT = Collections.unmodifiableList(java.util.Arrays.asList(TOP_LIVE, TOP_INPUTS, TOP_SETTINGS));
-    /** What can be a top button: the default three, and Recent Apps, App Store and Power for whoever adds them. */
+    /** What can be a top button: the default three, and Recent Apps, App Store, Power and Free memory for whoever adds them. */
     static final List<String> TOP_ALL = Collections.unmodifiableList(java.util.Arrays.asList(TOP_LIVE, TOP_INPUTS, TOP_SETTINGS,
-            TOP_RECENTS, TOP_STORE, TOP_POWER));
+            TOP_RECENTS, TOP_STORE, TOP_POWER, TOP_MEMORY));
     static final int MAX_TOP = TOP_ALL.size();
 
     /** The keys of the top buttons, in order (Settings > Top Buttons; by default Live TV, HDMI Inputs, Settings). */
@@ -329,6 +331,7 @@ final class HomeApps {
             case TOP_RECENTS: return action(RECENTS, TOP_RECENTS, Ui.tr("Recent Apps"), "recents");
             case TOP_STORE: return action(APP, TOP_STORE, Ui.tr("App Store"), "store");
             case TOP_POWER: return action(POWER, TOP_POWER, Ui.tr("Power"), "power");
+            case TOP_MEMORY: return action(FREE_MEMORY, TOP_MEMORY, Ui.tr("Free memory"), "memory");
             default: return action(SETTINGS, TOP_SETTINGS, Ui.tr("light|Settings"), "settings");
         }
     }
@@ -689,6 +692,48 @@ final class HomeApps {
                 .show();
     }
 
+    /**
+     * The "Free memory" button: frees the TV's memory (the apps that are running and not in front go to sleep), or
+     * opens the TV maker's own cleaner when the TV has one (the Allwinner ROM's "CleanUp").
+     */
+    private static void freeMemoryMenu(Context c) {
+        if (!(c instanceof Activity)) return;
+        Activity a = (Activity) c;
+        List<String> choices = new ArrayList<>();
+        choices.add(Ui.tr("Free the memory now"));
+        String cleaner = cleanerPackage(a);
+        if (cleaner != null) choices.add(Ui.trf("Open {app}", "app", Ui.tr("CleanUp")));
+        new android.app.AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(Ui.tr("Free memory"))
+                .setItems(choices.toArray(new String[0]), (d, which) -> {
+                    if (which == 0) ModeJob.scheduleFreeMemory(a);
+                    else if (cleaner != null) openCleaner(a, cleaner);
+                })
+                .setNegativeButton(Ui.tr("Cancel"), null)
+                .show();
+    }
+
+    /** The TV maker's own memory cleaner, when the TV has one: the Allwinner ROM's "CleanUp". */
+    static String cleanerPackage(Context c) {
+        PackageManager pm = c.getPackageManager();
+        for (String pkg : new String[] {"com.charon.rocketfly"}) {
+            if (launchIntent(pm, pkg) != null) return pkg;
+        }
+        return null;
+    }
+
+    /** Opens the TV maker's own cleaner. */
+    private static void openCleaner(Activity a, String pkg) {
+        Intent intent = launchIntent(a.getPackageManager(), pkg);
+        if (intent == null) return;
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            a.startActivity(intent);
+        } catch (ActivityNotFoundException | SecurityException e) {
+            AppLog.w("couldn't open the cleaner: " + e.getMessage());
+        }
+    }
+
     /** Opens the item with the system zoom transition growing out of the card (the app starts opening right away). */
     static boolean open(Activity a, Item it, View from, int x, int y, int w, int h) {
         return open(a, it, ActivityOptions.makeScaleUpAnimation(from, x, y, Math.max(w, 1), Math.max(h, 1)).toBundle());
@@ -734,6 +779,9 @@ final class HomeApps {
                 break;
             case POWER:
                 powerMenu(a);
+                return true;
+            case FREE_MEMORY:
+                freeMemoryMenu(a);
                 return true;
             default:
                 return false;

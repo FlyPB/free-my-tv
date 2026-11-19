@@ -271,6 +271,9 @@ final class HomeMode {
         "com.softwinner.update", "com.softwinner.awmanager", "com.softwinner.provision",
         "com.allwinnertech.packageoverride", "com.hisight.mslauncher", "tv.autostart",
         "com.softwinner.theme.icon", "com.softwinner.theme.color", "com.softwinner.timerswitch",
+        // The Allwinner ROM's memory cleaner (the "CleanUp" app): the person wants it on, and Free My TV's own
+        // "Free memory" button does the same without it.
+        "com.charon.rocketfly",
         // Amazon Fire TV: launcher, settings, setup, remote pairing, inputs, live TV, channel scan, OTA updates, Appstore
         // (every com.amazon.* is refused by mayTurnOff too)
         "com.amazon.tv.launcher", "com.amazon.firehomestarter", "com.amazon.tv.settings.v2", "com.amazon.tv.settings.core",
@@ -787,6 +790,61 @@ final class HomeMode {
         } catch (IOException e) {
             AppLog.w("power: " + e.getMessage());
         }
+    }
+
+    /**
+     * Frees the TV's memory, through the TV's own ADB: the apps that are running and not in front are killed, and the
+     * memory they had is given back to the system. The apps in front are left alone (killing what the person is using
+     * is their call), and so are the ones the TV needs (the launcher, the settings, the remote's service).
+     */
+    static void freeMemoryNow(Context c) {
+        try (Adb adb = connect(c, state(c))) {
+            busy(c, Ui.tr("Freeing the memory…"));
+            Set<String> keep = new HashSet<>(Arrays.asList(PKG, PKG + ":home", PKG + ":coreservices"));
+            keep.add(packageOf(originalHome(state(c))));
+            keep.add(packageOf(originalDream(state(c))));
+            String front = resumedPackage(adb);
+            if (front != null) keep.add(front);
+            // The apps that are running and nobody is using: the ones with a process and no activity in front.
+            // The list of installed packages tells the apps from the system's own processes (whose names have
+            // a dot in them too, like "android.hardware.boot@1.2-service").
+            Set<String> installed = new HashSet<>();
+            for (String line : adb.shell("pm list packages").split("\n")) {
+                line = line.trim();
+                if (line.startsWith("package:")) installed.add(line.substring(8).trim());
+            }
+            List<String> running = new ArrayList<>();
+            for (String line : adb.shell("ps -A -o NAME").split("\n")) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                int colon = line.indexOf(':');
+                String pkg = colon < 0 ? line : line.substring(0, colon);
+                if (installed.contains(pkg) && !running.contains(pkg)) running.add(pkg);
+            }
+            int killed = 0;
+            for (String pkg : running) {
+                if (keep.contains(pkg) || keep.contains(pkg + ":home") || keep.contains(pkg + ":coreservices")) continue;
+                if (!mayKill(pkg)) continue;
+                String out = adb.shell("am kill " + pkg);
+                // "am kill" only kills what the system can spare: the app comes back when the person opens it.
+                if (!out.contains("Error") && !out.contains("Exception")) killed++;
+            }
+            done(c, null);
+            notice(c, Ui.trf("Freed the memory: {n} apps put to sleep.", "n", killed));
+            AppLog.w("memory: " + killed + " apps put to sleep");
+        } catch (IOException e) {
+            done(c, null);
+            AppLog.w("memory: " + e.getMessage());
+            notice(c, Ui.trf("Couldn't free the memory: {error}", "error", e.getMessage()));
+        }
+    }
+
+    /** Whether the app can be put to sleep: never one the TV needs to run. */
+    private static boolean mayKill(String pkg) {
+        if (pkg.startsWith("com.android.systemui") || pkg.startsWith("com.android.providers.settings")
+                || pkg.startsWith("com.android.server") || pkg.startsWith("android")) return false;
+        for (String one : PROTECTED) if (pkg.equals(one) || pkg.startsWith(one + ".")) return false;
+        return true;
     }
 
     static String bricksText() {

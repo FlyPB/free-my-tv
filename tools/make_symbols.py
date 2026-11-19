@@ -25,6 +25,7 @@ MAP = {
     "lightbulb": ("lightbulb", 1), "toggle": ("toggle_on", 1), "fan": ("mode_fan", 1), "blinds": ("blinds", 1),
     "bolt": ("bolt", 1), "smart_button": ("smart_button", 1),
     "power": ("power_settings_new", 1),
+    "memory": ("cleaning_services", 1),   # drawn by hand: hk1/make_memory_icon.py
 }
 
 

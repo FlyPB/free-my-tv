@@ -111,6 +111,22 @@ outros ✗ — e o app precisou de listas próprias ✗ (as da TX9 ✗ são de o
 | `tv.autostart` | o que abre o launcher no boot ✗ |
 | `com.softwinner.theme.icon`, `com.softwinner.theme.color` | os temas |
 | `com.softwinner.timerswitch` | o desligamento automático |
+| `com.charon.rocketfly` | o **CleanUp** ✗ (o limpador de memória da ROM ✗) |
+
+### O CleanUp: o limpador de memória da ROM
+
+A box traz o **CleanUp** ✗ (`com.charon.rocketfly` ✗, em `/system/app/CleanUp/` ✗): o app do
+fabricante ✗ que põe os apps em segundo plano para dormir ✗ e devolve a memória ✗.
+
+Ele é do **sistema** ✗ (`android.uid.system` ✗) e fica **ligado** ✗ — está na lista `PROTECTED` ✗
+para o switch nunca desligá-lo ✗.
+
+O botão novo do topo ✗ é o **Free memory** ✗ (*Memória livre* ✗), que traz as duas coisas ✓:
+
+1. **Liberar a memória agora** ✗ — a própria função do Free My TV ✗, pelo ADB da box ✗: os apps
+   que estão rodando ✗ e não estão em frente ✗ vão dormir ✗ (`am kill` ✗), e os que a TV precisa ✗
+   (o launcher ✗, os ajustes ✗, o controle ✗) ficam ✗.
+2. **Abrir o CleanUp** ✗ — o limpador do fabricante ✗ (só aparece onde ele existe ✗).
 
 ## O que já foi testado
 
@@ -128,3 +144,4 @@ outros ✗ — e o app precisou de listas próprias ✗ (as da TX9 ✗ são de o
 - [ ] Com 2 GB de RAM ✓ o app usa os caminhos de desenho baratos ✓ — dá para ver se a animação fica
       lisa ✓.
 - [ ] A loja de aplicativos ✓ (a box tem as duas ✓ — Aurora Store ✓ e F-Droid ✓ — para escolher ✓).
+- [ ] O botão **Free memory** ✗ do topo ✓ (novo ✗): a limpeza própria ✗ e o CleanUp ✗.

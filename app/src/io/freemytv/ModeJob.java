@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 public class ModeJob extends JobService {
     static final String APPLY = "apply", VERIFY = "verify", REVERT = "revert", MEMORY = "memory", REMOTE = "remote",
             PLAYING = "playing", UPDATE = "update", INSTALL = "install", GRANT_WATCH = "watchGrant",
-            REVOKE_WATCH = "watchRevoke", POWER_ON = "powerOn", STORE = "store", POWER = "power";
+            REVOKE_WATCH = "watchRevoke", POWER_ON = "powerOn", STORE = "store", POWER = "power", FREE_MEMORY = "freeMemory";
     // job ids come from these names: keep them apart
 
     @Override public boolean onStartJob(JobParameters params) {
@@ -49,6 +49,7 @@ public class ModeJob extends JobService {
                     case POWER_ON: HomeMode.powerOnNow(app); break;
                     case STORE: HomeMode.storeNow(app, mode); break;   // the store's package comes in the mode slot
                     case POWER: HomeMode.powerNow(app, mode); break;   // "off" or "reboot", in the mode slot too
+                    case FREE_MEMORY: HomeMode.freeMemoryNow(app); break;
                     default: break;
                 }
             } catch (Throwable t) {
@@ -81,6 +82,11 @@ public class ModeJob extends JobService {
     /** Schedules the job that shuts the TV down or restarts it ("off" or "reboot", in the "mode" slot). */
     static long schedulePower(Context c, String what) {
         return schedule(c, POWER, what, 0);
+    }
+
+    /** Schedules the job that frees the TV's memory (the apps that are running and not in front go to sleep). */
+    static long scheduleFreeMemory(Context c) {
+        return schedule(c, FREE_MEMORY, "", 0);
     }
 
     /**
