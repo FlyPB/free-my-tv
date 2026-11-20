@@ -806,10 +806,10 @@ final class HomeMode {
             String front = resumedPackage(adb);
             if (front != null) keep.add(front);
             // The apps that are running and nobody is using: the ones with a process and no activity in front.
-            // The list of installed packages tells the apps from the system's own processes (whose names have
-            // a dot in them too, like "android.hardware.boot@1.2-service").
+            // Only the ones the person installed ("pm list packages -3"): the system's own keep running, and
+            // the TV would refuse to kill them without root anyway.
             Set<String> installed = new HashSet<>();
-            for (String line : adb.shell("pm list packages").split("\n")) {
+            for (String line : adb.shell("pm list packages -3").split("\n")) {
                 line = line.trim();
                 if (line.startsWith("package:")) installed.add(line.substring(8).trim());
             }
@@ -819,12 +819,12 @@ final class HomeMode {
                 if (line.isEmpty()) continue;
                 int colon = line.indexOf(':');
                 String pkg = colon < 0 ? line : line.substring(0, colon);
-                if (installed.contains(pkg) && !running.contains(pkg)) running.add(pkg);
+                if (!running.contains(pkg)) running.add(pkg);
             }
             int killed = 0;
             for (String pkg : running) {
                 if (keep.contains(pkg) || keep.contains(pkg + ":home") || keep.contains(pkg + ":coreservices")) continue;
-                if (!mayKill(pkg)) continue;
+                if (!mayKill(pkg, installed)) continue;
                 String out = adb.shell("am kill " + pkg);
                 // "am kill" only kills what the system can spare: the app comes back when the person opens it.
                 if (!out.contains("Error") && !out.contains("Exception")) killed++;
@@ -839,10 +839,12 @@ final class HomeMode {
         }
     }
 
-    /** Whether the app can be put to sleep: never one the TV needs to run. */
-    private static boolean mayKill(String pkg) {
-        if (pkg.startsWith("com.android.systemui") || pkg.startsWith("com.android.providers.settings")
-                || pkg.startsWith("com.android.server") || pkg.startsWith("android")) return false;
+    /**
+     * Whether the app can be put to sleep: only the ones the person installed. The system's own (the settings,
+     * the TV's apps, the stores) keep running, and the TV would refuse to kill them without root anyway.
+     */
+    private static boolean mayKill(String pkg, Set<String> installed) {
+        if (!installed.contains(pkg)) return false;
         for (String one : PROTECTED) if (pkg.equals(one) || pkg.startsWith(one + ".")) return false;
         return true;
     }
