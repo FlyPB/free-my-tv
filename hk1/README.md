@@ -145,3 +145,22 @@ O botão novo do topo ✗ é o **Free memory** ✗ (*Memória livre* ✗), que t
       lisa ✓.
 - [ ] A loja de aplicativos ✓ (a box tem as duas ✓ — Aurora Store ✓ e F-Droid ✓ — para escolher ✓).
 - [ ] O botão **Free memory** ✗ do topo ✓ (novo ✗): a limpeza própria ✗ e o CleanUp ✗.
+
+### As fotos: por que o Papel de Parede estava vazio
+
+Em **22/11/2026** ✗ as linhas *Papel de parede* ✗ e *Foto da tela de descanso* ✗ apareciam com um
+travessão ✗ e não faziam nada ✗ ✗. **Não era bug** ✗: a HK1 **não tinha foto nenhuma** ✗ — as fotos
+vêm do computador ✗ (`tools/photos.py` ✗), e na TX9 ✗ havia três ✗ (de teste ✗).
+
+O que mudou ✗:
+
+- As linhas dizem **"Nenhuma"** ✗ quando não há foto ✗ (o travessão ✗ não dizia nada ✗), e a dica
+  embaixo diz de onde elas vêm ✗ (a mesma de *Minhas fotos* ✗).
+- Três fotos de teste ✗ foram enviadas ✗ (`hk1/make_test_photos.py` ✗ gera as imagens ✗):
+
+```bash
+python3 tools/photos.py 192.168.0.5 hk1/fotos-teste/
+```
+
+Depois de abrir a tela inicial ✗ (ou os Ajustes ✗), o app importa ✗ e apaga o que foi enviado ✗
+(*photos: imported 3, 3 in all* ✗).

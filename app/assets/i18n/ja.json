@@ -178,6 +178,7 @@
  "OK chooses where they come from: default, Immich or an album.": "OKで取得元を選びます：デフォルト、Immich、またはアルバム。",
  "OK installs it; Android asks first.": "OKでインストールします。先にAndroidが確認します。",
  "OK opens the list. ← → change the value.": "OKで一覧を開きます。← →で値を変更します。",
+ "OK opens the photos; the arrows go through them.": "OK で写真が開き、矢印で1枚ずつ進みます。",
  "OK or the arrows change the value.": "OKまたは矢印で値を変更します。",
  "OK picks, Back cancels.": "OKで選択、戻るでキャンセル。",
  "OK removes them; the arrows turn them on or off.": "OKで削除、矢印でオン/オフします。",

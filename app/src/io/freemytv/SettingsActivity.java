@@ -1190,10 +1190,13 @@ public class SettingsActivity extends Activity {
             return HomeApps.liveTv(getContext()) != null ? Prefs.POWER_ON : new String[] {"tv", "home"};
         }
 
-        /** The chosen photo's place among the photos ("Automatic" when there is none, or it is gone). */
+        /**
+         * The chosen photo's place among the photos ("Automatic" when there is none, or it is gone). With no photo at
+         * all, the row says so, like "My Photos" does: a dash says nothing about why.
+         */
         private String photoValue(String name) {
             List<File> list = Photos.files(getContext());
-            if (list.isEmpty()) return "—";
+            if (list.isEmpty()) return Ui.tr("photos|None");
             for (int i = 0; i < list.size(); i++) if (list.get(i).getName().equals(name)) {
                 return Ui.trf("{i} of {n}", "i", i + 1, "n", list.size());
             }
@@ -2608,6 +2611,10 @@ public class SettingsActivity extends Activity {
                     : Photos.files(getContext()).isEmpty()
                     ? Ui.tr("Send them from a computer: see “Your own photos” in the README.")
                     : Ui.tr("OK removes them; the arrows turn them on or off."))
+                    : screen == HOME_SETTINGS && (from + focus == WALLPAPER_ROW || from + focus == SAVER_PHOTO_ROW)
+                    ? (Photos.files(getContext()).isEmpty()
+                    ? Ui.tr("Send them from a computer: see “Your own photos” in the README.")
+                    : Ui.tr("OK opens the photos; the arrows go through them."))
                     : screen == POWER && powerRow() != P_SHOW && unavailable(focus) == null ? Ui.tr("OK opens the list. ← → change the value.")
                     : screen == HOME_SETTINGS && from + focus == POWER_ON_ROW && unavailable(focus) == null
                     ? Ui.tr("Only after a full start, not from standby.")
